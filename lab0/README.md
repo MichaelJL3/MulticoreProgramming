@@ -5,13 +5,14 @@
 
 ##MAKEFILE
 
-compilation is extremely theres a makefile with a number of
+compilation is extremely simple, there's a makefile with a number of
 special flags and execution styles
 
-for simple compilation and execution that meets the assignment
-standards 
+for simple compilation and execution that meets the assignment standards 
 	make comp > compiles default version uses vectors
+
 	make exec > executes any compiled version
+	
 	make exec_pipe > executes and pipes output to file useful when 					 using the debug modes below 
 
 there are also more complex modes 
