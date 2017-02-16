@@ -27,6 +27,8 @@ int main(int argv, char** argc){
 	dataStruct data;
 
 	pthread_t *threads;
+	clock_t st;
+	double duration;
 	int rc, val, sum=0, deduct=0, numThreads=THREADS;
 
 	//get the number of threads if no value is entered uses default
@@ -46,9 +48,10 @@ int main(int argv, char** argc){
 	threads=new pthread_t[numThreads];
 
 	//create the threads
+	st=clock();
 	for(int i=0; i<numThreads; i++){
 		rc=pthread_create(&threads[i], NULL, test, (void*)&data);
-		//checks for errors creating the thread 
+		//checks for errors creating the thread
 		if(rc){
 			printf("Error creating thread: %d error: %d\n", i, rc);
 			deduct++;
@@ -82,8 +85,15 @@ int main(int argv, char** argc){
 	data.log.printLog();
 	#endif
 
-	//display the two sums
+	//make sure all threads have finished by this point
+	for (int i=0; i<numThreads; i++)
+       pthread_join(threads[i], NULL);
+
+	duration=((double)data.maxTime-st)/CLOCKS_PER_SEC;
+
+	//display the two sums and times
 	printf("Value from threads: %d\nValue from map: %d\n", sum, val);
+	printf("Length of time from first thread to last thread: %f\n", duration);
 
 	delete threads;
 
@@ -109,6 +119,7 @@ compiling with debug allows reports of failures
 and status updates to be viewed
 */
 void* test(void* data){
+	//starting time
 	clock_t st=clock(), en;
 
 	dataStruct *dt=(dataStruct*) data;
@@ -176,12 +187,14 @@ void* test(void* data){
 	dt->log.insert("Finished Thread: "+id);
 	#endif
 
-	//the largest en
-	//and all the run times
-
+	//end time
 	en=clock();
-	//(double)en-st/CLOCKS_PER_SEC;
-	//how to handle time display/last time^^^^^^^
+
+	dt->timeMutex.lock();
+	printf("Run time of Thread: %f\n", ((double)en-st)/CLOCKS_PER_SEC);
+	if(en>dt->maxTime)
+		dt->maxTime=en;
+	dt->timeMutex.unlock();
 
 	pthread_exit(NULL);
 }
@@ -193,6 +206,9 @@ void* test(void* data){
 
 //same as above test(void* data)
 void mainRunTest(void* data){
+	//starting time
+	clock_t st=clock(), en;
+
 	dataStruct *dt=(dataStruct*) data;
 
 	int32_t probability, generatedVal, val, sum=0;
@@ -255,6 +271,15 @@ void mainRunTest(void* data){
 	#ifdef DEBUG
 	dt->log.insert("Finished Main Run");
 	#endif
+
+	//end time
+	en=clock();
+
+	dt->timeMutex.lock();
+	printf("Run time of Test from Main: %f\n", ((double)en-st)/CLOCKS_PER_SEC);
+	if(en>dt->maxTime)
+		dt->maxTime=en;
+	dt->timeMutex.unlock();
 }
 
 #endif
