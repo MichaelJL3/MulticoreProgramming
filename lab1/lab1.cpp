@@ -11,8 +11,7 @@
 #include "hashmap.h"
 
 #ifdef DEBUG
-#include <mutex>
-std::mutex lock;
+#include "log.h"
 #endif
 
 #define TESTSIZE 10000
@@ -25,67 +24,16 @@ std::mutex lock;
 struct dataStruct{
 	ThreadSafeKVStore<std::string, int32_t> hmap;
 	ThreadSafeListenerQueue<int32_t> queue;	
+	#ifdef DEBUG
+	ThreadSafeLog log;
+	#endif
 };
 
-void* test(void* data){
-	dataStruct *dt=(dataStruct*) data;
+void* test(void* data);
 
-	int32_t probability, generatedVal, val, sum=0;
-	
-	std::vector<std::string> users;
-	std::string user;
-
-	std::default_random_engine gen(time(NULL));
-	std::uniform_int_distribution<int32_t> dist(MIN, MAX);
-	std::uniform_int_distribution<int32_t> distProbability(MIN32, MAX32);
-
-	for(int i=0; i<TESTSIZE; i++){
-		probability=distProbability(gen)%10;
-
-		if(probability<2){
-			generatedVal=dist(gen);
-			sum+=generatedVal;
-
-			#ifdef DEBUG
-			lock.lock();
-			printf("%d\n", generatedVal);
-			lock.unlock();
-			#endif
-
-			user="user"+std::to_string(generatedVal);
-			users.push_back(user);
-			
-			dt->hmap.accumulate(user, generatedVal);
-		}else if(users.size()){
-			user=users[distProbability(gen)%users.size()];
-			if(dt->hmap.lookup(user, val)==-1){
-				#ifdef DEBUG
-				lock.lock();
-				printf("Error looking up: %d\n", val);
-				lock.unlock();
-				#endif
-				exit(1);
-			}
-		}
-	}
-
-	#ifdef DEBUG
-	lock.lock();
-	printf("sum for thread: %d\n", sum);
-	lock.unlock();
-	#endif
-
-	if(dt->queue.push(sum)==-1){
-		#ifdef DEBUG
-		lock.lock();
-		printf("Error adding value to queue: %d\n", sum);
-		lock.unlock();
-		#endif
-		exit(1);
-	}
-
-	pthread_exit(NULL);
-}
+#ifdef EFFICIENT
+void mainRunTest(void* data);
+#endif
 
 int main(int argv, char** argc){
 	dataStruct data;
@@ -115,8 +63,8 @@ int main(int argv, char** argc){
 	}
 
 	#ifdef EFFICIENT
-	//test((void*)&data);
-	//numThreads++;
+	mainRunTest((void*)&data);
+	numThreads++;
 	#endif
 
 	numThreads-=deduct;
@@ -129,3 +77,105 @@ int main(int argv, char** argc){
 
 	return 0;
 }
+
+void* test(void* data){
+	dataStruct *dt=(dataStruct*) data;
+
+	int32_t probability, generatedVal, val, sum=0;
+	
+	std::vector<std::string> users;
+	std::string user;
+
+	std::default_random_engine gen(time(NULL));
+	std::uniform_int_distribution<int32_t> dist(MIN, MAX);
+	std::uniform_int_distribution<int32_t> distProbability(MIN32, MAX32);
+
+	for(int i=0; i<TESTSIZE; i++){
+		probability=distProbability(gen)%10;
+
+		if(probability<2){
+			generatedVal=dist(gen);
+			sum+=generatedVal;
+
+			user="user"+std::to_string(generatedVal);
+			users.push_back(user);
+			
+			dt->hmap.accumulate(user, generatedVal);
+		}else if(users.size()){
+			user=users[distProbability(gen)%users.size()];
+			if(dt->hmap.lookup(user, val)==-1){
+				#ifdef DEBUG
+				dt->log.insert("Error looking up value: "+std::to_string(val));
+				dt->log.printLog();
+				#endif
+				exit(1);
+			}
+		}
+	}
+
+	#ifdef DEBUG
+	dt->log.insert("Sum: "+std::to_string(sum));
+	#endif
+
+	if(dt->queue.push(sum)==-1){
+		#ifdef DEBUG
+		dt->log.insert("Error adding sum to queue: "+std::to_string(sum));
+		dt->log.printLog();
+		#endif
+		exit(1);
+	}
+
+	pthread_exit(NULL);
+}
+
+#ifdef EFFICIENT
+
+void mainRunTest(void* data){
+	dataStruct *dt=(dataStruct*) data;
+
+	int32_t probability, generatedVal, val, sum=0;
+	
+	std::vector<std::string> users;
+	std::string user;
+
+	std::default_random_engine gen(time(NULL));
+	std::uniform_int_distribution<int32_t> dist(MIN, MAX);
+	std::uniform_int_distribution<int32_t> distProbability(MIN32, MAX32);
+
+	for(int i=0; i<TESTSIZE; i++){
+		probability=distProbability(gen)%10;
+
+		if(probability<2){
+			generatedVal=dist(gen);
+			sum+=generatedVal;
+
+			user="user"+std::to_string(generatedVal);
+			users.push_back(user);
+			
+			dt->hmap.accumulate(user, generatedVal);
+		}else if(users.size()){
+			user=users[distProbability(gen)%users.size()];
+			if(dt->hmap.lookup(user, val)==-1){
+				#ifdef DEBUG
+				dt->log.insert("Error looking up value: "+std::to_string(val));
+				dt->log.printLog();
+				#endif
+				exit(1);
+			}
+		}
+	}
+
+	#ifdef DEBUG
+	dt->log.insert("Sum: "+std::to_string(sum));
+	#endif
+
+	if(dt->queue.push(sum)==-1){
+		#ifdef DEBUG
+		dt->log.insert("Error adding sum to queue: "+std::to_string(sum));
+		dt->log.printLog();
+		#endif
+		exit(1);
+	}
+}
+
+#endif

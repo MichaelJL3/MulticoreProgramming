@@ -20,6 +20,9 @@ d dbg debug:
 ef effic efficient:
 	$(COMPILER) $(EFFIC) $(FLAGS) -o $(PRGM) $(PRGM).cpp $(LIB)
 
+dbgef:
+	$(COMPILER) $(DEBUG) $(EFFIC) $(FLAGS) -o $(PRGM) $(PRGM).cpp $(LIB)
+
 r rn run:
 	./$(PRGM)
 
