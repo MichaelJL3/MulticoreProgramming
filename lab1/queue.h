@@ -3,6 +3,7 @@
 #define QUEUE_H
 
 #include <pthread.h>
+#include <semaphore.h>
 #include <list>
 
 /*************************************************************\
@@ -13,7 +14,9 @@ Last Modified: 2/16/2017
 
 !!OS specific requires posix libraries
 
-creates a thread safe queue using a single lock
+creates a thread safe queue using two locks which can operate 
+in parallel as long as the queue has size
+the size is denoted by a semaphore value
 
 class supports templates
 
@@ -24,8 +27,10 @@ T = type of variable stored in queue
 template<typename T>
 class ThreadSafeListenerQueue{
 	std::list<T> queue;
-	pthread_mutex_t lock;
+	pthread_mutex_t enque;
+	pthread_mutex_t deque;
 	pthread_cond_t cond;
+	sem_t count;
 public:
 	ThreadSafeListenerQueue();	//constructor
 	~ThreadSafeListenerQueue();	//destructor
@@ -37,28 +42,34 @@ public:
 /*
 constructor
 
-initializes mutex lock and condition
+initializes mutex locks, condition, and semaphore
 */
 template<typename T>
 ThreadSafeListenerQueue<T>::ThreadSafeListenerQueue(){
-	pthread_mutex_init(&lock, NULL);	pthread_cond_init(&cond, NULL);
+	pthread_mutex_init(&enque, NULL);
+	pthread_mutex_init(&deque, NULL);	
+	pthread_cond_init(&cond, NULL);
+	sem_init(&count, 0, 0);
 }
 
 /*
 destructor
 
-destroys mutex lock and condition
+destroys mutex locks, condition, and semaphore
 */
 template<typename T>
 ThreadSafeListenerQueue<T>::~ThreadSafeListenerQueue(){
-	pthread_mutex_destroy(&lock);
+	pthread_mutex_destroy(&enque);
+	pthread_mutex_destroy(&deque);
 	pthread_cond_destroy(&cond);
+	sem_destroy(&count);
 }
 
 /*
 push(T)
 
 locks and pushes an element to the queue
+increments the semaphore
 sends a signal to listener
 
 returns -1 if memory errors occur
@@ -66,14 +77,15 @@ else return 0;
 */
 template<typename T>
 int ThreadSafeListenerQueue<T>::push(const T element){
-	pthread_mutex_lock(&lock);
+	sem_post(&count);
+	pthread_mutex_lock(&enque);
 	try{
 		queue.push_back(element);
 		pthread_cond_signal(&cond);
-		pthread_mutex_unlock(&lock);
+		pthread_mutex_unlock(&enque);
 		return 0;
 	} catch(std::bad_alloc& e) {
-		pthread_mutex_unlock(&lock);
+		pthread_mutex_unlock(&enque);
 		return -1;
 	}
 }
@@ -81,22 +93,22 @@ int ThreadSafeListenerQueue<T>::push(const T element){
 /*
 pop(&T)
 
-locks and grabs element from front of queue
+locks and grabs the element from the front of the queue
+checks if the queue has elements through semaphore value
 
 returns 1 if queue is empty
 else return 0;
 */
 template<typename T>
 int ThreadSafeListenerQueue<T>::pop(T& element){
-	pthread_mutex_lock(&lock);
-	if(!queue.size()){
-		pthread_mutex_unlock(&lock);
+	if(sem_trywait(&count)){
 		return 1;
 	}
 
+	pthread_mutex_lock(&deque);
 	element=queue.front();
 	queue.pop_front();
-	pthread_mutex_unlock(&lock);
+	pthread_mutex_unlock(&deque);
 
 	return 0;
 }
@@ -112,15 +124,11 @@ will continue to try until it gets a value
 */
 template<typename T>
 int ThreadSafeListenerQueue<T>::listen(T& element){
-	pthread_mutex_lock(&lock);
-	while(!queue.size()){
-		pthread_cond_wait(&cond, &lock);
+	while(pop(element)){
+		pthread_mutex_lock(&deque);
+		pthread_cond_wait(&cond, &deque);
+		pthread_mutex_unlock(&deque);
 	}
-
-	element=queue.front();
-	queue.pop_front();
-	pthread_mutex_unlock(&lock);
-
 	return 0;
 }
  

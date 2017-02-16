@@ -43,8 +43,9 @@ int main(int argv, char** argc){
 
 	if(argv>1){
 		numThreads=atoi(argc[1]);
+		printf("Running %d Threads\n", numThreads);
 	}else{
-		printf("No Thread number entered using default: %d\n", THREADS);
+		printf("No Thread number entered using default: %d\n", numThreads);
 	}
 	
 	#ifdef EFFICIENT

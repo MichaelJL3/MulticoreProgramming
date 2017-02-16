@@ -24,10 +24,10 @@ dbgef:
 	$(COMPILER) $(DEBUG) $(EFFIC) $(FLAGS) -o $(PRGM) $(PRGM).cpp $(LIB)
 
 r rn run:
-	./$(PRGM)
+	./$(PRGM) $(n)
 
 ex examine output out:
-	./$(PRGM) > $(OUTPUT)
+	./$(PRGM) $(n) > $(OUTPUT)
 
 cl cln clean:
 	rm $(PRGM)
