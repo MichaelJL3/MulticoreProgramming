@@ -32,8 +32,11 @@ ef effic efficient:
 	$(COMPILER) $(EFFIC) $(FLAGS) -o $(PRGM) $(PRGM).cpp $(LIB)
 
 #turn on both efficiency and debugging
-dbgef:
+dbg_ef:
 	$(COMPILER) $(DEBUG) $(EFFIC) $(FLAGS) -o $(PRGM) $(PRGM).cpp $(LIB)
+
+compare:
+	$(COMPILER) -DCOMPARE $(FLAGS) -o $(PRGM) $(PRGM).cpp $(LIB)
 
 #standard run
 r rn run:

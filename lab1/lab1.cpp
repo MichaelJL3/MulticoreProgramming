@@ -95,6 +95,16 @@ int main(int argv, char** argc){
 	printf("Value from threads: %d\nValue from map: %d\n", sum, val);
 	printf("Length of time from first thread to last thread: %f\n", duration);
 
+	//compare results from serial to parallel
+	#ifdef COMPARE
+	double speedup;
+	double efficiency;
+	double serial=serialTest(numThreads);
+	speedup=serial/duration;
+	efficiency=speedup/numThreads;
+	printf("Speedup from T(1) to T(%d) = %f\nEfficiency = %f\n", numThreads, speedup, efficiency);
+	#endif
+
 	delete threads;
 
 	return 0;
@@ -280,6 +290,53 @@ void mainRunTest(void* data){
 	if(en>dt->maxTime)
 		dt->maxTime=en;
 	dt->timeMutex.unlock();
+}
+
+#endif
+
+#ifdef COMPARE
+
+//Serial version of the program 
+//returns duration of serial version
+double serialTest(int n){
+	clock_t st=clock(), en;
+	srand(time(NULL));
+
+	std::unordered_map<std::string, int32_t> umap;
+	std::vector<std::string> users;
+	
+	std::default_random_engine gen(time(NULL));
+	std::uniform_int_distribution<int32_t> dist(MIN, MAX);
+
+	std::string user;
+
+	double runtime;
+	long testsize=n*TESTSIZE;
+	int probability, value, sum=0;
+
+	for(long i=0; i<testsize; i++){
+		probability=rand()%10;
+		
+		if(probability<INSERT){
+			value=dist(gen);
+			sum+=value;
+			user="user"+std::to_string(value);
+			umap[user]+=value;
+		}else if(users.size()){
+			user=users[rand()%users.size()];
+			if(umap.find(user)==umap.end()){
+				exit(1);
+			}
+		}
+	}
+
+	printf("Sum of Sequential: %d\n", sum);
+
+	en=clock();
+	runtime=((double)en-st)/CLOCKS_PER_SEC;
+	printf("Sequential runtime: %f\n", runtime);
+
+	return runtime;
 }
 
 #endif

@@ -38,3 +38,7 @@ void* test(void* data);
 #ifdef EFFICIENT
 void mainRunTest(void* data);
 #endif
+
+#ifdef COMPARE
+double serialTest(int n);
+#endif
