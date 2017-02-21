@@ -9,7 +9,7 @@ compilation is extremely simple, there's a makefile with a number of
 special flags and execution styles
 
 for simple compilation and execution that meets the assignment standards 
-	make comp > compiles default version uses vectors
+	make comp > compiles default version
 	make c
 
 	make run > executes any compiled version
@@ -20,24 +20,22 @@ to specify number of threads use variable n
 
 if no number is specified a default of 4 is used as defined in lab1.h
 
-to compile with more functionality view the makefile
+to compile with more functionality view the makefile and read the section below
 
 there are also more complex modes 
-	make dbg > compiles a version which prints informative messages
-	make d
+	for compiling there are 4 flags D, E, C, A
 
-	make efficient > compiles a more efficient version using the method described below
-	make effic
-	make ef
+	A: all uses all the flags
+	D: debug flag compiles with debug mode
+	C: comparison compiles with comparison mode
+	E: efficiency compiles with efficiency mode
 
-	make dbg_ef > compiles a version with both efficient and debug flags
+	for running there is one flag O
 
-	make compare > compiles a version that compares the parallel to a sequential one
+	O: pipes the output of the run to a file
 
-	make compare_ef > compiles a version that compares using the efficient version
-
-	make everything > compiles a version that uses all the flags
-	make every
+	to use these flags set them to one when running the command
+	ex: make c D=1 E=1, make r O=1
 
 ##EFFICIENT MODE
 	runs n-1 threads and has the main process also run the test
