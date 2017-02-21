@@ -23,13 +23,13 @@ so no need for reader/writer lock
 
 class ThreadSafeLog{
 	std::list<std::string> log;
-	pthread_mutex_t lock, printLock;
+	pthread_mutex_t lock;
 public:
 	ThreadSafeLog();				//constructor
 	~ThreadSafeLog();				//destructor
 	int insert(std::string in);		//inserts into the log
-	std::string toString();			//return the log as a formatted string
-	void printLog();				//print the log
+	int toString(std::string &str);	//return the log as a formatted string
+	int printLog();					//print the log
 };
 
 /*
@@ -39,7 +39,6 @@ initializes the mutex locks
 */
 ThreadSafeLog::ThreadSafeLog(){
 	pthread_mutex_init(&lock, NULL);
-	pthread_mutex_init(&printLock, NULL);
 }
 
 /*
@@ -49,7 +48,6 @@ destroys the mutex locks
 */
 ThreadSafeLog::~ThreadSafeLog(){
 	pthread_mutex_destroy(&lock);
-	pthread_mutex_destroy(&printLock);
 }
 
 /*
@@ -61,13 +59,16 @@ if memory error occurs return -1
 else return 0
 */
 int ThreadSafeLog::insert(std::string in){
-	pthread_mutex_lock(&lock);
+	if(pthread_mutex_lock(&lock))
+		return -1;
 	try{
 		log.push_back(in);
-		pthread_mutex_unlock(&lock);
+		if(pthread_mutex_unlock(&lock))
+			return -1;
 		return 0;
 	} catch (std::bad_alloc& e){
-		pthread_mutex_unlock(&lock);
+		if(pthread_mutex_unlock(&lock))
+			return -1;
 		return -1;
 	}
 }
@@ -79,16 +80,19 @@ locks then iterates through the log creating a formatted string
 
 returns the formatted string
 */
-std::string ThreadSafeLog::toString(){
+int ThreadSafeLog::toString(std::string &str){
 	std::string logged="";
 
-	pthread_mutex_lock(&lock);
+	if(pthread_mutex_lock(&lock))
+		return -1;
 	for(auto it=log.begin(); it!=log.end(); it++){
 		logged+=*it+"\n";
 	}
-	pthread_mutex_unlock(&lock);
+	str=logged;
+	if(pthread_mutex_unlock(&lock))
+		return -1;
 
-	return logged;
+	return 0;
 }
 
 /*
@@ -96,10 +100,18 @@ printLog()
 
 locks the print grabs the string then prints it
 */
-void ThreadSafeLog::printLog(){
-	pthread_mutex_lock(&printLock);
-	printf("%s\n", toString().c_str());
-	pthread_mutex_unlock(&printLock);
+int ThreadSafeLog::printLog(){
+	std::string logString;
+	if(toString(logString))
+		return -1;
+
+	if(pthread_mutex_lock(&lock))
+		return -1;
+	printf("%s\n", logString.c_str());
+	if(pthread_mutex_unlock(&lock))
+		return -1;
+
+	return 0;
 }
 
 #endif

@@ -33,7 +33,7 @@ public:
     int accumulate(const K k, const V v);	//adds to item
     int lookup(const K k, V& v);			//lookup an item
     int remove(const K k);					//remove an item
-    int sum();								//sums all the elements
+    int sum(int &val);								//sums all the elements
 };
 
 /*
@@ -64,9 +64,11 @@ uses write lock as map is modified
 */
 template<typename K, typename V>
 int ThreadSafeKVStore<K, V>::insert(const K k, const V v){
-    pthread_rwlock_wrlock(&lock);
+    if(pthread_rwlock_wrlock(&lock))
+    	return -1;
     hashmap[k]=v;
-    pthread_rwlock_unlock(&lock);
+    if(pthread_rwlock_unlock(&lock))
+    	return -1;
 
     return 0;
 }
@@ -79,9 +81,11 @@ uses write lock as map is modified
 */
 template<typename K, typename V>
 int ThreadSafeKVStore<K, V>::accumulate(const K k, const V v){
-    pthread_rwlock_wrlock(&lock); 
+    if(pthread_rwlock_wrlock(&lock))
+    	return -1;
     hashmap[k]+=v;
-    pthread_rwlock_unlock(&lock);
+    if(pthread_rwlock_unlock(&lock))
+    	return -1;
 
     return 0;
 }
@@ -95,9 +99,11 @@ uses write lock as map is modified
 */
 template<typename K, typename V>
 int ThreadSafeKVStore<K, V>::remove(const K k){
-    pthread_rwlock_wrlock(&lock);
+    if(pthread_rwlock_wrlock(&lock))
+		return -1;
     hashmap.erase(k);
-    pthread_rwlock_unlock(&lock);
+    if(pthread_rwlock_unlock(&lock))
+    	return -1;
 
     return 0;
 }
@@ -115,13 +121,16 @@ uses read lock as map is not modified
 */
 template<typename K, typename V>
 int ThreadSafeKVStore<K, V>::lookup(const K k, V& v){
-    pthread_rwlock_rdlock(&lock);
+    if(pthread_rwlock_rdlock(&lock))
+    	return -1;
     if(hashmap.find(k)==hashmap.end()){
-        pthread_rwlock_unlock(&lock);
+        if(pthread_rwlock_unlock(&lock))
+        	return -1;
         return -1;
     }
     v=hashmap[k];
-    pthread_rwlock_unlock(&lock);
+    if(pthread_rwlock_unlock(&lock))
+    	return -1;
 
     return 0;
 }
@@ -134,15 +143,18 @@ locks while reading values
 uses read lock
 */
 template<typename K, typename V>
-int ThreadSafeKVStore<K, V>::sum(){
+int ThreadSafeKVStore<K, V>::sum(int &val){
     int sum=0;
-    pthread_rwlock_rdlock(&lock);
+    if(pthread_rwlock_rdlock(&lock))
+    	return -1;
     for(auto it=hashmap.begin(); it!=hashmap.end(); it++){
         sum+=it->second;
     }
-    pthread_rwlock_unlock(&lock);
+    val=sum;
+    if(pthread_rwlock_unlock(&lock))
+    	return -1;
 
-    return sum;
+    return 0;
 }
 
 #endif

@@ -76,7 +76,7 @@ int main(int argv, char** argc){
 	}
 
 	//grab the maps sum
-	val=data.hmap.sum();
+	data.hmap.sum(val);
 
 	#ifdef DEBUG
 	if(val!=sum)
@@ -86,6 +86,10 @@ int main(int argv, char** argc){
 	#endif
 
 	//make sure all threads have finished by this point
+	#ifdef EFFICIENT
+	numThreads--;
+	#endif 
+	
 	for (int i=0; i<numThreads; i++)
        pthread_join(threads[i], NULL);
 
@@ -102,7 +106,7 @@ int main(int argv, char** argc){
 	double serial=serialTest(numThreads);
 	speedup=serial/duration;
 	efficiency=speedup/numThreads;
-	printf("Speedup from T(1) to T(%d) = %f\nEfficiency = %f\n", numThreads, speedup, efficiency);
+	printf("Speedup from T(1) to T(%d) = %f\nEfficiency = %f\nTestsize of %ld\n", numThreads, speedup, efficiency, (long)TESTSIZE*numThreads);
 	#endif
 
 	delete threads;

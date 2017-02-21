@@ -35,8 +35,18 @@ ef effic efficient:
 dbg_ef:
 	$(COMPILER) $(DEBUG) $(EFFIC) $(FLAGS) -o $(PRGM) $(PRGM).cpp $(LIB)
 
-compare:
+#compile a compare mode which gives stats of speedup between speedup and serial
+compare stats:
 	$(COMPILER) -DCOMPARE $(FLAGS) -o $(PRGM) $(PRGM).cpp $(LIB)
+
+#compile a compare mode with efficiency
+compare_ef:
+	$(COMPILER) -DCOMPARE $(EFFIC) $(FLAGS) -o $(PRGM) $(PRGM).cpp $(LIB)
+
+#compiles using debug efficiency and comparison
+#not advised as the debug will cause more slowdown for the threads
+everything every:
+	$(COMPILER) -DCOMPARE $(DEBUG) $(EFFIC) $(FLAGS) -o $(PRGM) $(PRGM).cpp $(LIB)
 
 #standard run
 r rn run:

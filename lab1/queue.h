@@ -29,7 +29,6 @@ class ThreadSafeListenerQueue{
 	std::list<T> queue;
 	pthread_mutex_t enque;
 	pthread_mutex_t deque;
-	pthread_cond_t cond;
 	sem_t count;
 public:
 	ThreadSafeListenerQueue();	//constructor
@@ -48,7 +47,6 @@ template<typename T>
 ThreadSafeListenerQueue<T>::ThreadSafeListenerQueue(){
 	pthread_mutex_init(&enque, NULL);
 	pthread_mutex_init(&deque, NULL);	
-	pthread_cond_init(&cond, NULL);
 	sem_init(&count, 0, 0);
 }
 
@@ -61,7 +59,6 @@ template<typename T>
 ThreadSafeListenerQueue<T>::~ThreadSafeListenerQueue(){
 	pthread_mutex_destroy(&enque);
 	pthread_mutex_destroy(&deque);
-	pthread_cond_destroy(&cond);
 	sem_destroy(&count);
 }
 
@@ -77,15 +74,17 @@ else return 0;
 */
 template<typename T>
 int ThreadSafeListenerQueue<T>::push(const T element){
-	sem_post(&count);
-	pthread_mutex_lock(&enque);
+	if(pthread_mutex_lock(&enque))
+		return -1;
 	try{
 		queue.push_back(element);
-		pthread_cond_signal(&cond);
-		pthread_mutex_unlock(&enque);
+		sem_post(&count);
+		if(pthread_mutex_unlock(&enque))
+			return -1;
 		return 0;
 	} catch(std::bad_alloc& e) {
-		pthread_mutex_unlock(&enque);
+		if(pthread_mutex_unlock(&enque))
+			return -1;
 		return -1;
 	}
 }
@@ -105,10 +104,12 @@ int ThreadSafeListenerQueue<T>::pop(T& element){
 		return 1;
 	}
 
-	pthread_mutex_lock(&deque);
+	if(pthread_mutex_lock(&deque))
+		return -1;
 	element=queue.front();
 	queue.pop_front();
-	pthread_mutex_unlock(&deque);
+	if(pthread_mutex_unlock(&deque))
+		return -1;
 
 	return 0;
 }
@@ -124,11 +125,14 @@ will continue to try until it gets a value
 */
 template<typename T>
 int ThreadSafeListenerQueue<T>::listen(T& element){
-	while(pop(element)){
-		pthread_mutex_lock(&deque);
-		pthread_cond_wait(&cond, &deque);
-		pthread_mutex_unlock(&deque);
-	}
+	while(sem_wait(&count)){}
+	
+	if(pthread_mutex_lock(&deque))
+		return -1;
+	element=queue.front();
+	queue.pop_front();
+	if(pthread_mutex_unlock(&deque))
+		return -1;
 	return 0;
 }
  
