@@ -106,6 +106,9 @@ int main(int argv, char** argc){
 
 	//compare results from serial to parallel
 	#ifdef COMPARE
+	#ifdef EFFICIENT
+	numThreads++;
+	#endif
 	compare(numThreads, duration);
 	#endif
 
