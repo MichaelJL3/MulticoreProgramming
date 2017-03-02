@@ -5,7 +5,7 @@
 
  lab1.cpp
  Author: Michael Laucella
- Last Modified: 2/16/17
+ Last Modified: 3/1/17
 
  runs a test among n threads of a key
  value store using 10000 iterations
@@ -26,10 +26,10 @@ int main(int argv, char** argc){
 	//shared data structure
 	dataStruct data;
 
-	pthread_t *threads;
 	clock_t st;
+	pthread_t *threads;
 	double duration;
-	int rc, val, sum=0, deduct=0, numThreads=THREADS;
+	int rc, val, size, sum=0, deduct=0, numThreads=THREADS;
 
 	//get the number of threads if no value is entered uses default
 	if(argv>1){
@@ -85,28 +85,28 @@ int main(int argv, char** argc){
 	data.log.printLog();
 	#endif
 
-	//make sure all threads have finished by this point
 	#ifdef EFFICIENT
 	numThreads--;
 	#endif 
-	
+
+	//make sure all threads have finished by this point
 	for (int i=0; i<numThreads; i++)
        pthread_join(threads[i], NULL);
 
-	duration=((double)data.maxTime-st)/CLOCKS_PER_SEC;
+	duration=(double)(data.maxTime-st)/CLOCKS_PER_SEC;
 
 	//display the two sums and times
+	size=data.times.size();
+	for(int i=0; i<size; i++){
+		printf("run time of thread: %lf\n", data.times[i]);
+	}
+
 	printf("Value from threads: %d\nValue from map: %d\n", sum, val);
-	printf("Length of time from first thread to last thread: %f\n", duration);
+	printf("Length of time from first thread to last thread: %lf\n", duration);
 
 	//compare results from serial to parallel
 	#ifdef COMPARE
-	double speedup;
-	double efficiency;
-	double serial=serialTest(numThreads);
-	speedup=serial/duration;
-	efficiency=speedup/numThreads;
-	printf("Speedup from T(1) to T(%d) = %f\nEfficiency = %f\nTestsize of %ld\n", numThreads, speedup, efficiency, (long)TESTSIZE*numThreads);
+	compare(numThreads, duration);
 	#endif
 
 	delete threads;
@@ -139,17 +139,17 @@ void* test(void* data){
 	dataStruct *dt=(dataStruct*) data;
 
 	int32_t probability, generatedVal, val, sum=0;
+	pthread_t thread=pthread_self();
 	
 	std::vector<std::string> users;
 	std::string user;
 
 	//random generators
-	std::default_random_engine gen(time(NULL));
+	std::default_random_engine gen(time(NULL)*thread);
 	std::uniform_int_distribution<int32_t> dist(MIN, MAX);
 	std::uniform_int_distribution<int32_t> distProbability(MIN32, MAX32);
 
 	#ifdef DEBUG
-	pthread_t thread=pthread_self();
 	std::string id=std::to_string((unsigned long int) thread);
 	dt->log.insert("Starting Thread: "+id);
 	#endif
@@ -161,13 +161,19 @@ void* test(void* data){
 		//20% probability insert
 		if(probability<INSERT){
 			generatedVal=dist(gen);
-			sum+=generatedVal;
-
 			user="user"+std::to_string(generatedVal);
-			users.push_back(user);
 			
 			//modify the map
-			dt->hmap.accumulate(user, generatedVal);
+			if(dt->hmap.accumulate(user, generatedVal)==-1){
+				#ifdef DEBUG
+				dt->log.insert("Error inserting value: mutex lock failed");
+				dt->log.printLog();
+				#endif
+				exit(1);
+			}
+
+			users.push_back(user);
+			sum+=generatedVal;
 		}else if(users.size()){
 			//80% probability lookup
 			//if theres a value in the users vector grab a random one and look for it
@@ -205,142 +211,10 @@ void* test(void* data){
 	en=clock();
 
 	dt->timeMutex.lock();
-	printf("Run time of Thread: %f\n", ((double)en-st)/CLOCKS_PER_SEC);
+	dt->times.push_back(((double)en-st)/CLOCKS_PER_SEC);
 	if(en>dt->maxTime)
 		dt->maxTime=en;
 	dt->timeMutex.unlock();
 
 	pthread_exit(NULL);
 }
-
-
-//if efficient mode is enabled define the function for main
-//to run (only difference between the original id the call to pthread_exit)
-#ifdef EFFICIENT
-
-//same as above test(void* data)
-void mainRunTest(void* data){
-	//starting time
-	clock_t st=clock(), en;
-
-	dataStruct *dt=(dataStruct*) data;
-
-	int32_t probability, generatedVal, val, sum=0;
-	
-	std::vector<std::string> users;
-	std::string user;
-
-	//random generators
-	std::default_random_engine gen(time(NULL));
-	std::uniform_int_distribution<int32_t> dist(MIN, MAX);
-	std::uniform_int_distribution<int32_t> distProbability(MIN32, MAX32);
-
-	#ifdef DEBUG
-	dt->log.insert("Starting Test From Main");
-	#endif
-
-	for(int i=0; i<TESTSIZE; i++){
-		//probability 0-9
-		probability=distProbability(gen)%10;
-
-		//20% probability insert
-		if(probability<INSERT){
-			generatedVal=dist(gen);
-			sum+=generatedVal;
-
-			user="user"+std::to_string(generatedVal);
-			users.push_back(user);
-			
-			//modify the map
-			dt->hmap.accumulate(user, generatedVal);
-		}else if(users.size()){
-			//80% probability lookup
-			//if theres a value in the users vector grab a random one and look for it
-			user=users[distProbability(gen)%users.size()];
-			
-			//if value is not in map exit
-			if(dt->hmap.lookup(user, val)==-1){
-				#ifdef DEBUG
-				dt->log.insert("Error looking up value: "+std::to_string(val)+" on Main");
-				dt->log.printLog();
-				#endif
-				exit(1);
-			}
-		}
-	}
-
-	#ifdef DEBUG
-	dt->log.insert("Sum: "+std::to_string(sum)+" from Main");
-	#endif
-
-	//push to queue, if it fails exit
-	if(dt->queue.push(sum)==-1){
-		#ifdef DEBUG
-		dt->log.insert("Error adding sum to queue: "+std::to_string(sum)+" from Thread Main");
-		dt->log.printLog();
-		#endif
-		exit(1);
-	}
-
-	#ifdef DEBUG
-	dt->log.insert("Finished Main Run");
-	#endif
-
-	//end time
-	en=clock();
-
-	dt->timeMutex.lock();
-	printf("Run time of Test from Main: %f\n", ((double)en-st)/CLOCKS_PER_SEC);
-	if(en>dt->maxTime)
-		dt->maxTime=en;
-	dt->timeMutex.unlock();
-}
-
-#endif
-
-#ifdef COMPARE
-
-//Serial version of the program 
-//returns duration of serial version
-double serialTest(int n){
-	clock_t st=clock(), en;
-	srand(time(NULL));
-
-	std::unordered_map<std::string, int32_t> umap;
-	std::vector<std::string> users;
-	
-	std::default_random_engine gen(time(NULL));
-	std::uniform_int_distribution<int32_t> dist(MIN, MAX);
-
-	std::string user;
-
-	double runtime;
-	long testsize=n*TESTSIZE;
-	int probability, value, sum=0;
-
-	for(long i=0; i<testsize; i++){
-		probability=rand()%10;
-		
-		if(probability<INSERT){
-			value=dist(gen);
-			sum+=value;
-			user="user"+std::to_string(value);
-			umap[user]+=value;
-		}else if(users.size()){
-			user=users[rand()%users.size()];
-			if(umap.find(user)==umap.end()){
-				exit(1);
-			}
-		}
-	}
-
-	printf("Sum of Sequential: %d\n", sum);
-
-	en=clock();
-	runtime=((double)en-st)/CLOCKS_PER_SEC;
-	printf("Sequential runtime: %f\n", runtime);
-
-	return runtime;
-}
-
-#endif

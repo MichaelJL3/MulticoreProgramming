@@ -50,8 +50,15 @@ there are also more complex modes
 
 lab1.cpp  - holds the main function, the testing functions
 lab1.h    - holds many macros, struct/functions definitions and includes
-hashmap.h - holds the templated threadsafekeyvaluestore class
-queue.h   - holds the templated threadsafelistenerqueue class
-log.h 	  - holds a string log class used for the debug mode
+
+datastructs > holds threadsafe datastructures (log is an optional conditional ds)	
+	hashmap.h - holds the templated threadsafekeyvaluestore class
+	queue.h   - holds the templated threadsafelistenerqueue class
+	log.h 	  - holds a string log class used for the debug mode
+
+conditionalAddon > holds extra files for conditional compiles
+	compare.hpp - holds the functions for comparing run time of: T(1) - T(n)
+	efficient.hpp - holds the function for running a test iteration in main
+
 makefile  - used to compile and execute the code
 readme.md

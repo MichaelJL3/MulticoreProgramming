@@ -1,4 +1,7 @@
 
+#ifndef LAB1_HPP
+#define LAB1_HPP
+
 #include <pthread.h>
 #include <cstdio>
 #include <string>
@@ -7,11 +10,11 @@
 #include <ctime>
 #include <mutex>
 
-#include "queue.h"
-#include "hashmap.h"
+#include "datastructs/queue.h"
+#include "datastructs/hashmap.h"
 
 #ifdef DEBUG
-#include "log.h"
+#include "datastructs/log.h"
 #endif
 
 #define TESTSIZE 10000		//default test size
@@ -26,8 +29,10 @@
 struct dataStruct{
 	ThreadSafeKVStore<std::string, int32_t> hmap;
 	ThreadSafeListenerQueue<int32_t> queue;
+	std::vector<double> times;
 	std::mutex timeMutex;
 	clock_t maxTime=0;
+	
 	#ifdef DEBUG
 	ThreadSafeLog log;
 	#endif
@@ -36,9 +41,11 @@ struct dataStruct{
 void* test(void* data);
 
 #ifdef EFFICIENT
-void mainRunTest(void* data);
+#include "conditionalAddon/efficient.hpp"
 #endif
 
 #ifdef COMPARE
-double serialTest(int n);
+#include "conditionalAddon/compare.hpp"
+#endif
+
 #endif
