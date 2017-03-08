@@ -4,14 +4,19 @@
 #include <iostream>
 #include "httpreq/httpreq.hpp"
 #include "httpreq/httpresp.hpp"
+#include "network/server.hpp"
+#include "threads/threadPoolServer.hpp"
 
 using namespace std;
 
 int main(){
 
+    ThreadPoolServer server;
+    server.start();
+
     //ThreadPool pool(4);
 
-    HTTPReq req("GET / HTTP/1.1\r\n", 17);
+    /*HTTPReq req("GET / HTTP/1.1\r\n", 17);
 
     if(req.parse()==-1||req.isMalformed()){
         //errors!
@@ -29,7 +34,7 @@ int main(){
     }
 
     cout<<req.getURI()<<endl;
-    cout<<req.getBody()<<endl;
+    cout<<req.getBody()<<endl;*/
 
     return 0;
 }

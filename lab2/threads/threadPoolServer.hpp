@@ -4,28 +4,13 @@
 
 #include "threadPool.hpp"
 
-class ThreadPoolServer : public ThreadPool{
+class ThreadPoolServer : public ThreadPool, public Server{
     ThreadSafeKVStore<std::string, int32_t> hmap;
 	ThreadSafeListenerQueue<int32_t> queue;
-    HTTPReq request;
 public:
     void* run();
-    void getRequest();
-    void postRequest();
-    void deleteRequest();
+    //void handleConn();
 };
-
-getRequest(){
-    std::string key=request.getURI();
-
-    //key=md5(key.substr(1));
-
-    if(hmap.find(key)==-1){
-        //return 404
-    }
-
-    return hmap[key];
-}
 
 #include "threadPoolServer.cpp" 
 
