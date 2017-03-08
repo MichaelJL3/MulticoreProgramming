@@ -2,10 +2,9 @@
 #include "lab2.h"
 
 #include <iostream>
-#include "httpreq/httpreq.hpp"
-#include "httpreq/httpresp.hpp"
-#include "network/server.hpp"
 #include "threads/threadPoolServer.hpp"
+
+#include "hashing/md5.hpp"
 
 using namespace std;
 
@@ -13,6 +12,8 @@ int main(){
 
     ThreadPoolServer server;
     server.start();
+
+    //implement the MD5
 
     //ThreadPool pool(4);
 
