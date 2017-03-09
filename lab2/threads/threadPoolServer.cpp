@@ -1,6 +1,32 @@
 
-#ifdef THREAD_POOL_SERVER_HPP
+#include "threadPoolServer.hpp" 
 
+/*************************************\
+
+ threadPoolServer.cpp
+ Author: Michael Laucella
+ Last Modified: 3/8/17
+
+ implements the threadPoolServer class in
+ threadPoolServer.hpp
+
+ extends both the threadpool and the Server
+ class to allow for a multithreaded server
+
+ used for a very specific purpose in 
+ creating a kv server store
+
+ uses crypto++ for md5 key hashing
+ and provided httpreq/httpresp for
+ http parsing
+
+ uses a queue listener for message
+ passing between threadpool and 
+ server
+
+\*************************************/
+
+//constructor
 ThreadPoolServer::ThreadPoolServer(int threads, int port) : ThreadPool(threads), Server(1024, threads, port){
 
 }
@@ -11,6 +37,7 @@ ThreadPoolServer::ThreadPoolServer(int threads, int port) : ThreadPool(threads),
 //comment out
 //add in some informational debugging
 
+//thread run function
 void* ThreadPoolServer::run(){
     Container* data;
     std::string reqType, key, val, body="";
@@ -56,6 +83,7 @@ void* ThreadPoolServer::run(){
     pthread_exit(NULL);
 }
 
+//handle incoming connections
 void ThreadPoolServer::handleConn(){
     recv();
     if(this->getMsgSize()){
@@ -65,5 +93,3 @@ void ThreadPoolServer::handleConn(){
         closeConn(this->getConn());
     }
 }
-
-#endif

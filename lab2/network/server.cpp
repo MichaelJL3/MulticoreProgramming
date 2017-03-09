@@ -1,6 +1,25 @@
 
+/*************************************\
+
+ server.cpp
+ Author: Michael Laucella
+ Last Modified: 3/8/17
+
+ implementation of the Server
+ class in server.hpp
+
+ **extends the socket class
+
+ **not thread safe
+
+ **throws run-time exception 
+   on any failure
+
+\*************************************/
+
 #include "server.hpp"
 
+//server constructor
 Server::Server() : Socket(8000){
     bufferSize=DEFBUFFSIZE;
     listening=LISTEN;
@@ -9,6 +28,7 @@ Server::Server() : Socket(8000){
     buffer=new char[bufferSize];
 }
 
+//server constructor
 Server::Server(int size, int listeners, int port) : Socket(port){
     bufferSize=size;
     listening=listeners;
@@ -17,10 +37,12 @@ Server::Server(int size, int listeners, int port) : Socket(port){
     buffer=new char[bufferSize];
 }
 
+//delete the message buffer
 Server::~Server(){
     delete buffer;
 }
 
+//start the server
 void Server::start(){
     int optval=1;
     socklen_t client_len;
@@ -28,27 +50,34 @@ void Server::start(){
 
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval , sizeof(int));
 
+    //bind the server
     if(bind(sockfd, (struct sockaddr *) &addr, sizeof(addr))<0)
         throw std::runtime_error("Failed Server Binding");
-    
+
+    //set the amount of active listeners in the queue
     if(listen(sockfd, listening)<0)
         throw std::runtime_error("Failed Server Listening");
 
     client_len = sizeof(client_addr);
 
+    //infinite loop
     while(1){
+        //wait for incoming client connection
         client_socket = accept(sockfd, (struct sockaddr *) &client_addr, &client_len);
         
+        //set client timeout
 	    if(setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout))<0) 
             throw std::runtime_error("Failed To Set Timeout");
 
         if (client_socket < 0) 
             throw std::runtime_error("Error Accepting Connection");
 
+        //handle incoming connection
         handleConn();
     }
 }
 
+//overwrittable connection handler currently just serves as an echo server
 void Server::handleConn(){
     recv();
     printf("Received Message:\n%s\n", buffer);
@@ -56,41 +85,50 @@ void Server::handleConn(){
     closeConn();
 }
 
+//receive a message from a client (timesout)
 void Server::recv(){
     bzero(buffer, bufferSize);
     bytesRead=read(client_socket, buffer, bufferSize-1);
 
+    //size of message cannot be less then 0
     bytesRead=(bytesRead<0?0:bytesRead);
 }
 
+//send a message to the last client
 void Server::send(std::string msg){
     if(write(client_socket, msg.c_str(), msg.length())<0)
         throw std::runtime_error("Error Sending Message");
 }
 
+//send a message to a client
 void Server::send(std::string msg, int conn){
     if(write(conn, msg.c_str(), msg.length())<0)
         throw std::runtime_error("Error Sending Message");
 }
 
+//close the last client connection
 void Server::closeConn(){
     if(close(client_socket)<0)
         throw std::runtime_error("Error Closing Connection");
 }
 
+//close a client connection
 void Server::closeConn(int conn){
     if(close(conn)<0)
         throw std::runtime_error("Error Closing Connection");
 }
 
+//get the client connection
 int Server::getConn(){
     return client_socket;
 }
 
+//get the message size
 int Server::getMsgSize(){
     return bytesRead;
 }
 
+//get the message buffer
 char* Server::getMsg(){
     return buffer;
 }

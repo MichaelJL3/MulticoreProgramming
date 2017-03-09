@@ -1,4 +1,14 @@
 
+/*************************************\
+
+ sockets.hpp
+ Author: Michael Laucella
+ Last Modified: 3/8/17
+
+ create a basic tcp/ip socket
+
+\*************************************/
+
 #ifndef SOCKETS_HPP
 #define SOCKETS_HPP
 
@@ -13,17 +23,17 @@
 #include <strings.h>
 #include <stdexcept>
 
-#define DEFPORT 80
+#define DEFPORT 80 //default port number
 
 class Socket{
 protected:
     int sockfd, port;
     struct sockaddr_in addr;
 public:
-    Socket();
-    Socket(int p);
-    ~Socket();
-    void setup();
+    Socket();       //constructor
+    Socket(int p);  //constructor
+    ~Socket();      //destructor
+    void setup();   //setup the socket
 };
 
 #endif

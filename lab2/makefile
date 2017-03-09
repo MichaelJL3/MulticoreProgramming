@@ -18,9 +18,22 @@ PRGM=lab2
 NAME=$(PRGM)
 
 #compile flags
-#degug flag
+#all flags
+ifdef A
+FLAGS+= $(GDB) -DINFO -DSAFE
+else
+#debug flag
 ifdef D
-FLAGS+= GDB
+FLAGS+= $(GDB)
+endif
+#information flag
+ifdef I
+FLAGS+= -DINFO
+endif
+#safety flag
+ifdef S
+FLAGS+= -DSAFE
+endif
 endif
 
 #run flags
