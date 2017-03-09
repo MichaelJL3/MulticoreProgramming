@@ -50,6 +50,10 @@ void Server::start(){
 
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval , sizeof(int));
 
+    #ifdef INFO 
+    LOG("Starting Server on Port: " << port << "\nBinding:");
+    #endif
+
     //bind the server
     if(bind(sockfd, (struct sockaddr *) &addr, sizeof(addr))<0)
         throw std::runtime_error("Failed Server Binding");
@@ -60,17 +64,31 @@ void Server::start(){
 
     client_len = sizeof(client_addr);
 
+    #ifdef INFO 
+    LOG("Listening: " << listening);
+    #endif
+
     //infinite loop
     while(1){
         //wait for incoming client connection
         client_socket = accept(sockfd, (struct sockaddr *) &client_addr, &client_len);
         
-        //set client timeout
-	    if(setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout))<0) 
-            throw std::runtime_error("Failed To Set Timeout");
+        #ifdef INFO
+        LOG("\nClient Accepted: " << client_socket);
+        #endif
 
-        if (client_socket < 0) 
+        //set client timeout
+	    if(setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout))<0){
+            #ifndef SAFE
+            throw std::runtime_error("Failed To Set Timeout");
+            #endif
+        }
+
+        if (client_socket < 0){
+            #ifndef SAFE
             throw std::runtime_error("Error Accepting Connection");
+            #endif
+        }
 
         //handle incoming connection
         handleConn();
@@ -96,26 +114,38 @@ void Server::recv(){
 
 //send a message to the last client
 void Server::send(std::string msg){
-    if(write(client_socket, msg.c_str(), msg.length())<0)
+    if(write(client_socket, msg.c_str(), msg.length())<0){
+        #ifndef SAFE
         throw std::runtime_error("Error Sending Message");
+        #endif
+    }
 }
 
 //send a message to a client
 void Server::send(std::string msg, int conn){
-    if(write(conn, msg.c_str(), msg.length())<0)
+    if(write(conn, msg.c_str(), msg.length())<0){
+        #ifndef SAFE
         throw std::runtime_error("Error Sending Message");
+        #endif
+    }
 }
 
 //close the last client connection
 void Server::closeConn(){
-    if(close(client_socket)<0)
+    if(close(client_socket)<0){
+        #ifndef SAFE
         throw std::runtime_error("Error Closing Connection");
+        #endif
+    }
 }
 
 //close a client connection
 void Server::closeConn(int conn){
-    if(close(conn)<0)
+    if(close(conn)<0){
+        #ifdef SAFE
         throw std::runtime_error("Error Closing Connection");
+        #endif
+    }
 }
 
 //get the client connection

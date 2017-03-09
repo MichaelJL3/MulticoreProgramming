@@ -77,6 +77,11 @@ void* ThreadPoolServer::run(){
         send(res.isMalformed()?"HTTP/1.1 501 Internal Server Error\r\n\r\n":res.getResponse(), conn);
             
         closeConn(conn);
+        
+        #ifdef INFO 
+        LOG("\nREQ:\n"<<req.getMethod()<<" "<<req.getURI()<<"\n"<<req.getBody()<<"\nRES:\n"<<res.getResponse()<<"\nKEY: "<<key);
+        #endif
+        
         md5.clear();
     }
 

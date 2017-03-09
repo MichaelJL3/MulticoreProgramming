@@ -14,6 +14,11 @@
 
 \*************************************/
 
+#ifdef INFO
+#include <iostream>
+#define LOG(...) std::cout << __VA_ARGS__ << std::endl
+#endif
+
 #include "sockets.hpp"
 
 #define LISTEN 5
