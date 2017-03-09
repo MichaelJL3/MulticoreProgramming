@@ -33,7 +33,7 @@ public:
     int accumulate(const K k, const V v);	//adds to item
     int lookup(const K k, V& v);			//lookup an item
     int remove(const K k);					//remove an item
-    int sum(int &val);								//sums all the elements
+    int sum(int &val);						//sums all the elements
 };
 
 /*

@@ -1,41 +1,20 @@
 
 #include "lab2.h"
 
-#include <iostream>
-#include "threads/threadPoolServer.hpp"
+int main(int argc, char** argv){
+    int port=8000;
+    int threads=4;
 
-#include "hashing/md5.hpp"
+    if(argc==3){
+        threads=atoi(argv[1]);
+        port=atoi(argv[2]);
+    }else if(argc>1){
+        threads=atoi(argv[1]);
+    }
 
-using namespace std;
-
-int main(){
-
-    ThreadPoolServer server;
+    ThreadPoolServer server(threads, port);
+    server.createThreads();
     server.start();
-
-    //implement the MD5
-
-    //ThreadPool pool(4);
-
-    /*HTTPReq req("GET / HTTP/1.1\r\n", 17);
-
-    if(req.parse()==-1||req.isMalformed()){
-        //errors!
-    }
-
-    switch(req.getMethod()){
-        case "GET": 
-            break;
-        case "POST": 
-            break;
-        case "DELETE": 
-            break;
-        default: 
-            break;
-    }
-
-    cout<<req.getURI()<<endl;
-    cout<<req.getBody()<<endl;*/
 
     return 0;
 }

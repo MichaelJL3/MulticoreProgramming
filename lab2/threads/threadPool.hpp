@@ -2,6 +2,8 @@
 #ifndef THREAD_POOL_HPP
 #define THREAD_POOL_HPP
 
+#include <pthread.h>
+
 #define THREADS 4			//default number of threads
 
 class ThreadPool {

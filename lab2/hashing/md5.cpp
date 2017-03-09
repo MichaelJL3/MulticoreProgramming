@@ -11,6 +11,10 @@ void MD5Hash::MD5(char* input, int size){
     hashMD5.CalculateDigest(digest, (byte*)input, size);
 }
 
+void MD5Hash::clear(){
+    hash="";
+}
+
 std::string MD5Hash::getHash(std::string input){
     MD5(input);
     return getHash();

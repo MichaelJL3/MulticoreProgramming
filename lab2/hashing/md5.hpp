@@ -13,6 +13,7 @@ class MD5Hash{
 public:
     void MD5(std::string input);
     void MD5(char* input, int size);
+    void clear();
     std::string getHash();
     std::string getHash(std::string input);
     std::string getHash(char* input, int size);
