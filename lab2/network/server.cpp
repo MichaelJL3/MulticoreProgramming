@@ -78,11 +78,11 @@ void Server::start(){
         #endif
 
         //set client timeout
-	    if(setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout))<0){
-            #ifndef SAFE
-            throw std::runtime_error("Failed To Set Timeout");
-            #endif
-        }
+	    //if(setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout))<0){
+        //    #ifndef SAFE
+        //    throw std::runtime_error("Failed To Set Timeout");
+        //    #endif
+        //}
 
         if (client_socket < 0){
             #ifndef SAFE

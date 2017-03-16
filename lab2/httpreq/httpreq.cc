@@ -19,12 +19,13 @@
 #include <string>
 #include <string.h>
 #include <iostream>
+#include <errno.h>
 
-HTTPReq::HTTPReq(const char *buffer, size_t len)
+HTTPReq::HTTPReq(const int sock_fd)
 	: parsed_(false)
 	, malformed_(true)
+	, sock_fd_(sock_fd)
 {
-	data_ = std::string(buffer, len);
 }
 
 // This must be called before any of the accessors are used.
@@ -34,16 +35,15 @@ int HTTPReq::parse(void) {
 	size_t content_length = 0;
 
 	// Parse the request header
-	size_t start = 0, end;
-	end = data_.find(header_sep, start);
-	if (end == start || end == std::string::npos) {
+	std::string method_line = readLine();
+	if (!method_line.length() || errno == EIO) {
 		std::cerr << "Failed to find request method/type line" << std::endl;
 		return -1;
 	}
 
 	char method[255], uri[255];
 	int rval;
-	if (3 != (rval = sscanf(data_.substr(start, end - start).c_str(), "%254s %254s HTTP/%lf", 
+	if (3 != (rval = sscanf(method_line.c_str(), "%254s %254s HTTP/%lf", 
 		            method, uri, &version_))) {
 		std::cerr << "Failed to scan request method/type from request (got " << rval
 		          << " pieces)" << std::endl;
@@ -51,17 +51,18 @@ int HTTPReq::parse(void) {
 	}
 	method_ = method;
 	uri_ = uri;
-	start = end + header_sep.length();
 
 	// Parse the following header items
 	do {
 		// Find the next header line
-		end = data_.find(header_sep, start);
-		if (end == start || end == data_.length() || end == std::string::npos) {
-			break;
+		std::string line = readLine();
+		if (line.length() == 0) {
+			if (!errno) {		// Got a simple \r\n
+				break;
+			} else {
+				return -1;
+			}
 		}
-		std::string line = data_.substr(start, end - start);
-		start = end + header_sep.length();
 
 		// Make sure it's valid
 		size_t colon = line.find_first_of(':');
@@ -75,31 +76,70 @@ int HTTPReq::parse(void) {
 		std::string val = line.substr(colon + 2);
 		if (0 == strncasecmp(key.c_str(), "content-length", key.length())) {
 			content_length = strtol(val.c_str(), nullptr, 0);
+		} else if (0 == strncasecmp(key.c_str(), "connection", key.length())) {
+			keep_alive_ = (!strncasecmp(val.c_str(), "keep-alive", val.length())?true:false);
 		} else {
 			std::cerr << "Ignoring header field '" << key << "'" << std::endl;
 		}
 
-	} while ((start != end) && (end != data_.length() && (end != std::string::npos)));
+	} while (true);
 
 	// Parse out the body, if we can
-	if (start == end && end != data_.length()) {
-		start = end + header_sep.length();
+	body_="";
+	if (content_length > 0) {
+		body_ = readBytes(content_length);
+		if (body_ == "") {
+			perror("Failed to read body: ");
+			return -1;		//errno is set
+		}
+	}
+	
+	malformed_ = false;
+	return 0;
+}
 
-		if (content_length > 0) {
-			if (start + content_length > data_.length()) {
-				std::cerr << "Premature body end (" << start + content_length
-				          << " > " << data_.length() << ")" << std::endl;
-				return -1;
+std::string HTTPReq::readLine(void) {
+	errno = 0;
+	int state = 0;			// 0: reading bytes; 1: read \r; 2: read \r\n
+	std::string line = "";
+
+	while(state != 2) {
+		char byte;
+		int rval = read(sock_fd_, (void*)&byte, 1);
+		if (rval < 0) {
+			// errno is set
+			return "";
+		} else if (rval == 1) {
+			line.append(1, byte);
+			if (state == 1) {
+				state = (byte == '\n') ? 2 : 0;
+			} else if (state == 0 && byte == '\r') {
+				state = 1;
 			}
-			body_ = data_.substr(start, content_length);
+		}
+	}
+	return line.substr(0, line.length() - 2);
+}
 
-		} else {
-			body_ = "";
+std::string HTTPReq::readBytes(const size_t length) {
+	errno = 0;
+	std::string data = "";
+
+	while(data.length() < length) {
+		char byte;
+		int rval = read(sock_fd_, (void*)&byte, 1);
+		if (rval < 0) {
+			// errno is set
+			return "";
+		} else if (rval == 1) {
+			data.append(1, byte);
+		} else if (rval != 0) {
+			errno = EFAULT;
+			return "";
 		}
 	}
 
-	malformed_ = false;
-	return 0;
+	return data;
 }
 
 const std::string HTTPReq::getMethod(void) const {
@@ -120,6 +160,10 @@ const double HTTPReq::getVersion(void) const {
 
 const bool HTTPReq::isMalformed(void) const {
 	return malformed_;
+}
+
+const bool HTTPReq::keepAlive(void) const {
+	return keep_alive_;
 }
 
 std::ostream& operator<<(std::ostream& os, const HTTPReq& req) {

@@ -18,6 +18,12 @@
 #include <iostream>
 #include <string.h>
 
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <stdlib.h>
+
 struct HTTPReqSample {
 	const char* request;
 	const char* method;
@@ -37,7 +43,7 @@ struct HTTPReqSample httpreq_samples[n_req_samples] = {
 	 "Accept-Encoding: gzip, deflate\r\n"
 	 "Connection: Keep-Alive\r\n"
 	 "\r\n"
-	 "licenseID=string&content=string&/paramsXML=string\r\n",
+	 "licenseID=string&content=string&/paramsXML=string",
 	 "POST", "/cgi-bin/process.cgi", 1.1,
 	 "licenseID=string&content=string&/paramsXML=string"},
 
@@ -52,7 +58,7 @@ struct HTTPReqSample httpreq_samples[n_req_samples] = {
 	 "Content-length: 10\r\n"
 	 "AnotherHeader: Random value here\r\n"
 	 "\r\n"
-	 "Abcdefghij\r\n",
+	 "Abcdefghij",
 	 "POST", "/user2048", 1.1, "Abcdefghij"},
 	
 	{"DELETE /user65535 HTTP/1.1\r\n"
@@ -108,12 +114,104 @@ struct HTTPRespSample httpresp_samples[n_resp_samples] = {
 	 "Server error!"}
 };
 
+const char* socket_path = ".hidden_sock";
+
+void* ReqPusher(void* args) {
+	char* req = (char*)args;
+	struct sockaddr_un addr;
+	int fd;
+		
+	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+		perror("socket error");
+		exit(-1);
+	}
+
+	// Set up the addr
+	memset(&addr, 0, sizeof(addr));
+	addr.sun_family = AF_UNIX;
+	if (*socket_path == '\0') {
+		*addr.sun_path = '\0';
+		strncpy(addr.sun_path+1, socket_path+1, sizeof(addr.sun_path)-2);
+	} else {
+		strncpy(addr.sun_path, socket_path, sizeof(addr.sun_path)-1);
+	}
+
+	// Connect on the 'client' end
+	if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+	    perror("connect error");
+	    exit(-1);
+	}
+
+	size_t size_to_write = strlen(req);
+	size_t offset = 0;
+	while(size_to_write) {
+		int rval = write(fd, req + offset, size_to_write - offset);
+		if (rval < 0) {
+			perror("write error");
+			exit(-1);
+		}
+		offset += rval;
+		size_to_write -= rval;
+	}
+	
+	pthread_exit((void*)0);
+}
+
 int main(const int argc, const char* argv[]) {
 	size_t passed = 0;
 
 	// Test the HTTPReq class
 	for(size_t i = 0; i < n_req_samples; i++) {
-		HTTPReq request(httpreq_samples[i].request, strlen(httpreq_samples[i].request));
+
+		unlink(socket_path);
+
+		// Build the socket
+		char buf[4096];
+		struct sockaddr_un addr;
+		int fd, rc;
+	
+		if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+			perror("socket error");
+			return -1;
+		}
+
+		// Set up the addr
+		memset(&addr, 0, sizeof(addr));
+		addr.sun_family = AF_UNIX;
+		if (*socket_path == '\0') {
+			*addr.sun_path = '\0';
+			strncpy(addr.sun_path+1, socket_path+1, sizeof(addr.sun_path)-2);
+		} else {
+			strncpy(addr.sun_path, socket_path, sizeof(addr.sun_path)-1);
+		}
+
+		// Bind the 'server' to the socket
+		if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+			perror("bind error");
+			exit(-1);
+		}
+		
+		if (listen(fd, 5) == -1) {
+			perror("listen error");
+			exit(-1);
+		}
+
+		// Create a thread to push stuff into the socket
+		pthread_t thread;
+		void* args = (void*)httpreq_samples[i].request;
+		if (0 != pthread_create(&thread, NULL, ReqPusher, (void*)args)) {
+			std::cerr << "Failed to create thread to push data into connection" << std::endl;
+			return -1;
+		}
+
+		// Accept and parse
+		int cl;
+		if ((cl = accept(fd, NULL, NULL)) == -1) {
+			perror("accept error");
+			return -1;
+		}
+
+		HTTPReq request(cl);
 		if (0 != request.parse() || request.isMalformed()) {
 			std::cerr << "Failed to parse sample request #" << i << "; aborting test" << std::endl;
 			return -1;
@@ -125,7 +223,14 @@ int main(const int argc, const char* argv[]) {
 		    request.getBody() != httpreq_samples[i].body)
 		{
 			std::cerr << "Parsed request #" << i << " improperly; aborting test" << std::endl;
+			std::cerr << "Expected body: " << httpreq_samples[i].body << std::endl;
+			std::cerr << "Got body: " << request.getBody() << std::endl;
+			return -1;
 		}
+		void* rval;
+		pthread_join(thread, &rval);
+		close(cl);
+
 		passed++;
 	}
 

@@ -31,26 +31,20 @@ ThreadPoolServer::ThreadPoolServer(int threads, int port) : ThreadPool(threads),
 
 }
 
-//Switch to new httpreq class
-//implement loadbalancing on multi request keep-alive
-//reenable keepalive
-//comment out
-//add in some informational debugging
-
 //thread run function
 void* ThreadPoolServer::run(){
-    Container* data;
     std::string reqType, key, val, body="";
     MD5Hash md5;
     int conn, code=404;
+    bool alive;
 
     while(true){
-        queue.listen(data);
+        //wait for connection
+        queue.listen(conn);
 
-        conn=data->conn;
-        HTTPReq req(data->message, data->msgSize);
-        delete data;
+        HTTPReq req(conn);
 
+        //ignore malformed or failed parses as 404
         if(req.parse()!=-1||!req.isMalformed()){
             reqType=req.getMethod();
             key=md5.getHash(req.getURI());
@@ -73,15 +67,25 @@ void* ThreadPoolServer::run(){
             }
         }
 
-        HTTPResp res(code, body, false);
-        send(res.isMalformed()?"HTTP/1.1 501 Internal Server Error\r\n\r\n":res.getResponse(), conn);
-            
-        closeConn(conn);
+        //check for keep alive connection
+        alive=req.keepAlive();
         
+        //sedn response
+        HTTPResp res(code, body, alive);
+        send(res.isMalformed()?"HTTP/1.1 501 Internal Server Error\r\n\r\n":res.getResponse(), conn);
+
+        //push back on queue or close connection
+        if(alive)
+            queue.push(conn);
+        else
+            closeConn(conn);
+        
+        //optional logging
         #ifdef INFO 
-        LOG("\nREQ:\n"<<req.getMethod()<<" "<<req.getURI()<<"\n"<<req.getBody()<<"\nRES:\n"<<res.getResponse()<<"\nKEY: "<<key);
+        LOG("\nREQ: "<<req<<"\nKEEP-ALIVE: "<<alive<<"\nRES: "<<res.getResponse()<<"\nKEY: "<<key);
         #endif
         
+        //clear out the md5 buffer
         md5.clear();
     }
 
@@ -90,11 +94,5 @@ void* ThreadPoolServer::run(){
 
 //handle incoming connections
 void ThreadPoolServer::handleConn(){
-    recv();
-    if(this->getMsgSize()){
-        Container* data=new Container(this->getConn(), this->getMsg(), this->getMsgSize());
-        queue.push(data);
-    }else{
-        closeConn(this->getConn());
-    }
+    queue.push(this->getConn());
 }

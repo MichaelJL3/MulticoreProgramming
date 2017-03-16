@@ -2,7 +2,7 @@ CC = g++
 RM = rm
 TARGET = test-httpreq
 CCFLAGS = -std=c++11 -g
-LDFLAGS = 
+LDFLAGS = -lpthread
 SRCS = httpreq.cc httpresp.cc test-httpreq.cc
 OBJS = $(SRCS:.cc=.o)
 

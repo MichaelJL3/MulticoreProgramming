@@ -34,23 +34,9 @@
 #include "../httpreq/httpresp.hpp"
 #include "../hashing/md5.hpp"
 
-//struct to pass info to thread listener queue
-struct Container{
-    int conn;       //the connection
-    int msgSize;    //the message size
-    char* message;  //the message
-public:
-    //constructor
-    Container(int c, char* msg, int ms){
-        conn=c;
-        message=msg;
-        msgSize=ms;
-    }
-};
-
 class ThreadPoolServer : public ThreadPool, public Server{
     ThreadSafeKVStore<std::string, std::string> hmap;
-	ThreadSafeListenerQueue<Container*> queue;
+	ThreadSafeListenerQueue<int> queue;
 public:
     ThreadPoolServer(int threads, int port);    //constructor
     void* run();                                //thread run function

@@ -16,28 +16,34 @@
 
 #pragma once
 #include <string>
+#include <unistd.h>
 
 // Parses the headers and body out of a HTTP request
 class HTTPReq {
 	const std::string header_sep = "\r\n";
 
   public:
-    HTTPReq(const char* const buf, size_t len);
+	HTTPReq(const int sock_fd);
 	int parse(void);
+
+	std::string readLine(void);
+	std::string readBytes(const size_t length);
 
 	const std::string getMethod(void) const;
 	const std::string getURI(void) const;
 	const std::string getBody(void) const;
 	const double getVersion(void) const;
 	const bool isMalformed(void) const;
+	const bool keepAlive(void) const;
 
 	friend std::ostream& operator<<(std::ostream& os, const HTTPReq& req);  
 
   private:
-	std::string data_;
+	const int sock_fd_;
 	bool parsed_;
 	bool malformed_;
-	
+	bool keep_alive_;
+
 	std::string method_;
 	std::string uri_;
 	std::string body_;
