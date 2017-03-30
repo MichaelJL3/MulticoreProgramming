@@ -66,5 +66,7 @@ threads >
 makefile  - used to compile and execute the code
 readme.md
 
+Uses the crypto++ library for md5 hashing
+
 to run add the cryptopp library to the loader path
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path_to_lab2/lab2/hashing/cryptopp565
