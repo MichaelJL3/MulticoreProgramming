@@ -16,8 +16,8 @@
 
 #define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
 
-#include "cryptopp565/md5.h"
-#include "cryptopp565/hex.h"
+#include <crypto++/md5.h>
+#include <crypto++/hex.h>
 
 class MD5Hash{
     CryptoPP::Weak::MD5 hashMD5;

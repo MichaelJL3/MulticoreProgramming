@@ -10,7 +10,7 @@
 COMPILER=g++
 WARNING=-Wall
 GDB=-g
-LIB=-lpthread -Lhashing/cryptopp565/ -lcryptopp
+LIB=-lpthread -Lhashing/cryptopp565/ -lcrypto++
 VRS=-std=c++11
 FLAGS=$(WARNING) $(VRS)
 
@@ -26,7 +26,7 @@ addr=localhost
 #compile flags
 #all flags
 ifdef A
-FLAGS+= $(GDB) -DINFO -DSAFE
+FLAGS+= $(GDB) -DINFO -DSAFE -DSTATS
 else
 #debug flag
 ifdef D
@@ -40,6 +40,11 @@ endif
 ifdef S
 FLAGS+= -DSAFE
 endif
+#stats flag
+ifdef ST
+FLAGS+= -DSTATS
+endif
+
 endif
 
 #run flags
@@ -61,6 +66,9 @@ gen_test:
 
 http:
 	httperf --server=$(addr) --port=$(p) --wsesslog $(sess),4,requests.txt
+
+stats:
+	python ./analyze/stats.py
 
 #delete the binary
 cl cln clean:

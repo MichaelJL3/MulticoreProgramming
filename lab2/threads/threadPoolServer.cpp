@@ -27,7 +27,11 @@
 \*************************************/
 
 //constructor
-ThreadPoolServer::ThreadPoolServer(int threads, int port, int listen=1024) : ThreadPool(threads), Server(1024, listen, port) {}
+ThreadPoolServer::ThreadPoolServer(int threads, int port, int listen=1024) : ThreadPool(threads), Server(1024, listen, port) {
+    #ifdef STATS
+    fd.open ("analyze/stats.csv", std::ofstream::out | std::ofstream::app);
+    #endif
+}
 
 //thread run function
 void* ThreadPoolServer::run(){
@@ -36,12 +40,20 @@ void* ThreadPoolServer::run(){
     int conn, code;
     bool alive;
 
+    #ifdef STATS
+    clock_t st_time, en_time;
+    #endif
+
     while(true){
+        #ifdef STATS
+        st_time=clock();
+        #endif
+
         //wait for connection
         queue.listen(conn);
 
         HTTPReq req(conn);
-	code=404;
+	    code=404;
 
         //ignore malformed or failed parses as 404
         if(req.parse()!=-1||!req.isMalformed()){
@@ -72,6 +84,14 @@ void* ThreadPoolServer::run(){
         //sedn response
         HTTPResp res(code, body, alive);
         send(res.isMalformed()?"HTTP/1.1 501 Internal Server Error\r\n\r\n":res.getResponse(), conn);
+
+        #ifdef STATS
+        en_time=clock();
+        timeLock.lock();
+        fd<<reqType+","+std::to_string(((double)en_time-st_time)/CLOCKS_PER_SEC)+"\n";
+        fd.flush();
+        timeLock.unlock();
+        #endif
 
         //push back on queue or close connection
         if(alive)

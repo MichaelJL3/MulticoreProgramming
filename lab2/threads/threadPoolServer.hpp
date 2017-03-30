@@ -34,9 +34,20 @@
 #include "../httpreq/httpresp.hpp"
 #include "../hashing/md5.hpp"
 
+#ifdef STATS
+#include <mutex>
+#include <ctime>
+#include <fstream>
+#include <string>
+#endif
+
 class ThreadPoolServer : public ThreadPool, public Server{
     ThreadSafeKVStore<std::string, std::string> hmap;
 	ThreadSafeListenerQueue<int> queue;
+    #ifdef STATS
+    std::mutex timeLock;
+    std::ofstream fd;
+    #endif
 public:
     ThreadPoolServer(int threads, int port, int listen);    //constructor
     void* run();         //thread run function
