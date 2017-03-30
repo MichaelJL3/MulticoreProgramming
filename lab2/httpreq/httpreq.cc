@@ -32,6 +32,7 @@ HTTPReq::HTTPReq(const int sock_fd)
 // Returns 0 if the parsing succeeded, a negative value otherwise.
 int HTTPReq::parse(void) {
 	parsed_ = true;
+	keep_alive_=false;
 	size_t content_length = 0;
 
 	// Parse the request header
@@ -61,7 +62,7 @@ int HTTPReq::parse(void) {
 				break;
 			} else {
 				return -1;
-			}
+			} 
 		}
 
 		// Make sure it's valid
@@ -94,6 +95,9 @@ int HTTPReq::parse(void) {
 		}
 	}
 	
+	if(version_==1.1)
+		keep_alive_=true;
+
 	malformed_ = false;
 	return 0;
 }
@@ -116,6 +120,9 @@ std::string HTTPReq::readLine(void) {
 			} else if (state == 0 && byte == '\r') {
 				state = 1;
 			}
+		} else if (!rval) {
+			errno = EIO;
+			return "";
 		}
 	}
 	return line.substr(0, line.length() - 2);

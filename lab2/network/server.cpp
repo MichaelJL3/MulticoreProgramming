@@ -20,18 +20,7 @@
 #include "server.hpp"
 
 //server constructor
-Server::Server() : Socket(8000){
-    bufferSize=DEFBUFFSIZE;
-    listening=LISTEN;
-    timeout.tv_sec=5;
-	timeout.tv_usec=0;
-    buffer=new char[bufferSize];
-}
-
-//server constructor
-Server::Server(int size, int listeners, int port) : Socket(port){
-    bufferSize=size;
-    listening=listeners;
+Server::Server(int size=DEFBUFFSIZE, int listeners=LISTEN, int port=8000) : Socket(port), bufferSize(size), listening(listeners){
     timeout.tv_sec=5;
 	timeout.tv_usec=0;
     buffer=new char[bufferSize];
@@ -78,11 +67,17 @@ void Server::start(){
         #endif
 
         //set client timeout
-	    //if(setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout))<0){
-        //    #ifndef SAFE
-        //    throw std::runtime_error("Failed To Set Timeout");
-        //    #endif
-        //}
+	if(setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout))<0){
+            #ifndef SAFE
+            throw std::runtime_error("Failed To Set Timeout");
+            #endif
+        }
+
+	if(setsockopt(client_socket, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout))<0){
+	    #ifndef SAFE
+	    throw std::runtime_error("Failed To Set Timeout");
+	    #endif
+	}
 
         if (client_socket < 0){
             #ifndef SAFE

@@ -29,17 +29,26 @@ int main(int argc, char** argv){
     //default values
     int port=8000;
     int threads=4;
+    int listen=1024;
 
     //accept arguments in terms of num threads and port num
-    if(argc==3){
+    if(argc==4){
+        threads=atoi(argv[1]);
+        port=atoi(argv[2]);
+        listen=atoi(argv[3]);
+    }
+    else if(argc==3){
         threads=atoi(argv[1]);
         port=atoi(argv[2]);
     }else if(argc>1){
         threads=atoi(argv[1]);
     }
 
+    puts("Example Usage: ./server (num_threads) (port_num) (num_listeners)");
+    printf("Starting Server Threads: %d\nListening On Port: %d\n", threads, port);
+
     //instantiate a server object and start
-    ThreadPoolServer server(threads, port);
+    ThreadPoolServer server(threads, port, listen);
     server.createThreads();
     server.start();
 

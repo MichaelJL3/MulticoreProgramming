@@ -27,15 +27,13 @@
 \*************************************/
 
 //constructor
-ThreadPoolServer::ThreadPoolServer(int threads, int port) : ThreadPool(threads), Server(1024, threads, port){
-
-}
+ThreadPoolServer::ThreadPoolServer(int threads, int port, int listen=1024) : ThreadPool(threads), Server(1024, listen, port) {}
 
 //thread run function
 void* ThreadPoolServer::run(){
     std::string reqType, key, val, body="";
     MD5Hash md5;
-    int conn, code=404;
+    int conn, code;
     bool alive;
 
     while(true){
@@ -43,6 +41,7 @@ void* ThreadPoolServer::run(){
         queue.listen(conn);
 
         HTTPReq req(conn);
+	code=404;
 
         //ignore malformed or failed parses as 404
         if(req.parse()!=-1||!req.isMalformed()){

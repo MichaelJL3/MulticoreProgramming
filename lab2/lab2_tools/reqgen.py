@@ -29,7 +29,7 @@ class ReqGen:
 			req = self.genLookup(key)
 	
 		# Extra newline to force httperf to open new connection
-		return req + "\n"
+		return req
 	
 	def genInsert(self, key):
 		val = self.genValue()

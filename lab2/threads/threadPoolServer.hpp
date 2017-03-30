@@ -38,9 +38,9 @@ class ThreadPoolServer : public ThreadPool, public Server{
     ThreadSafeKVStore<std::string, std::string> hmap;
 	ThreadSafeListenerQueue<int> queue;
 public:
-    ThreadPoolServer(int threads, int port);    //constructor
-    void* run();                                //thread run function
-    void handleConn();                          //connection handling
+    ThreadPoolServer(int threads, int port, int listen);    //constructor
+    void* run();         //thread run function
+    void handleConn();   //connection handling
 };
 
 #endif

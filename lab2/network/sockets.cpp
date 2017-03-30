@@ -16,14 +16,12 @@
 #include "sockets.hpp"
 
 //constructor
-Socket::Socket(){
-    port=DEFPORT;
+Socket::Socket(): port(DEFPORT) {
     setup();
 }
 
 //constructor
-Socket::Socket(int p){
-    port=p;
+Socket::Socket(int p): port(p){
     setup();
 }
 

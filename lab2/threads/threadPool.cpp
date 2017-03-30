@@ -20,14 +20,12 @@
 #include "threadPool.hpp"
 
 //constructor
-ThreadPool::ThreadPool(){
-    numThreads=THREADS;
+ThreadPool::ThreadPool(): numThreads(THREADS){
     threads=new pthread_t[numThreads];
 }
 
 //constructor
-ThreadPool::ThreadPool(long n){
-    numThreads=n;
+ThreadPool::ThreadPool(long n): numThreads(n){
     threads=new pthread_t[numThreads];
 }
 

@@ -33,7 +33,6 @@ class Server : public Socket{
     int listening;
 public:
     //constructors/destructors
-    Server();
     Server(int size, int listeners, int port);
     ~Server();
     void start();                           //start the server

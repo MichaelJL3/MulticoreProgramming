@@ -10,12 +10,18 @@
 COMPILER=g++
 WARNING=-Wall
 GDB=-g
-LIB=-lpthread -lcrypto++
+LIB=-lpthread -Lhashing/cryptopp565/ -lcryptopp
 VRS=-std=c++11
 FLAGS=$(WARNING) $(VRS)
 
 PRGM=lab2
 NAME=$(PRGM)
+
+n=8
+p=8000
+sess=1000
+reqs=100
+addr=localhost
 
 #compile flags
 #all flags
@@ -43,12 +49,18 @@ PIPE=> $(NAME)_runlog.txt
 endif
 
 #compile
-c ++ comp:
+c comp:
 	$(COMPILER) $(FLAGS) -o $(NAME) network/*.cpp hashing/*.cpp httpreq/httpreq.cc httpreq/httpresp.cc threads/*.cpp $(PRGM).cpp $(LIB)
 
 #run
 r rn run:
 	./$(PRGM) $(n) $(p) $(PIPE)
+
+gen_test:
+	python lab2_tools/lab2_workload.py -n=$(sess) -m=$(reqs) > requests.txt
+
+http:
+	httperf --server=$(addr) --port=$(p) --wsesslog $(sess),4,requests.txt
 
 #delete the binary
 cl cln clean:
