@@ -85,7 +85,7 @@ def piTimeGraph(percents, name):
 def graph(times, name, label):
     line, =plt.plot(times, linewidth=2.0, label=label);
     plt.legend(handles=[line])
-    display(name, 'Requests', 'Time (seconds)')
+    display(name, 'Time (seconds)', 'Requests')
 
 def amountGraph(amounts):
     objects = ('Gets', 'Posts', 'Deletes', 'Unknowns')
