@@ -1,0 +1,2 @@
+95 / 100
+Array Index checks not done - Might lead to Issues during Dereference in accumulate
