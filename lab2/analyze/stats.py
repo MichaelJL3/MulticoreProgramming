@@ -60,6 +60,29 @@ def analyze():
     graph(delete, 'deleteGraph.jpg', 'delete requests')
     graphType(get, post, delete, unknown)
 
+    mx=max(times)
+    mn=min(times)
+    
+    times.sort()
+    size=len(times)
+    if(size%2==0):
+        mdn=(float(times[int(size/2)-1])+float(times[int(size/2)]))/2
+    else:
+        mdn=times[int(size/2)]
+
+    avg=average(times)
+
+    print("Maximum Time: "+str(mx)+"\nMinimum Time: "+str(mn)+"\nMedian: "+str(mdn)+"\nAverage: "+str(avg))
+
+def average(arr):
+    avg=0.0
+    tot=len(arr)
+
+    for elem in arr:
+        avg+=float(elem)
+
+    return avg/tot
+
 def piTypeGraph(percents, name):
     labels = 'Gets', 'Posts', 'Deletes', 'Unknowns'
     explode = (0.1, 0, 0, 0)

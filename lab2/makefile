@@ -61,12 +61,19 @@ c comp:
 r rn run:
 	./$(PRGM) $(n) $(p) $(PIPE)
 
+#clean
+clean:
+	rm lab2
+
+#create a test file
 gen_test:
 	python lab2_tools/lab2_workload.py -n=$(sess) -m=$(reqs) > requests.txt
 
+#run httperf
 http:
 	httperf --server=$(addr) --port=$(p) --wsesslog $(sess),4,requests.txt
 
+#analyze the run time stats
 stats:
 	python ./analyze/stats.py
 
