@@ -17,7 +17,7 @@ LockFreeQueue<T>::~LockFreeQueue(){
 }
 
 template <typename T>
-void LockFreeQueue<T>::enqueue(T& val){
+void LockFreeQueue<T>::push(T& val){
 	Node<T>* currTail;
 	Node<T>* node=new Node<T>;
 	node->next=nullptr;
@@ -68,7 +68,7 @@ T LockFreeQueue<T>::dequeue(){
 }
 
 template <typename T>
-T LockFreeQueue<T>::listenDequeue(){
+T LockFreeQueue<T>::listen(){
 	T val;
 
 	while(1){

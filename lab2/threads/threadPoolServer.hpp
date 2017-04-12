@@ -43,7 +43,11 @@
 
 class ThreadPoolServer : public ThreadPool, public Server{
     ThreadSafeKVStore<std::string, std::string> hmap;
+    #ifndef LFREE
 	ThreadSafeListenerQueue<int> queue;
+    #else
+    LockFreeQueue<int> queue;
+    #endif
     #ifdef STATS
     std::mutex timeLock;
     std::ofstream fd;

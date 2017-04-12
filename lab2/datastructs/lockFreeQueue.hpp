@@ -33,8 +33,8 @@ class LockFreeQueue{
 public:
 	LockFreeQueue();
 	~LockFreeQueue();
-	void enqueue(T &val);
-	T listenDequeue();
+	void push(T &val);
+	T listen();
 	T dequeue();
 };
 
