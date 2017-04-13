@@ -35,15 +35,36 @@
 #include "../hashing/md5.hpp"
 
 #ifdef STATS
+#include <iostream>
+#include <signal.h>
+#include <atomic>
 #include <mutex>
 #include <ctime>
 #include <fstream>
 #include <string>
+
+struct Data{
+    int conn;
+    clock_t st;
+};
+
+static std::atomic<int> _gets = ATOMIC_VAR_INIT(0);
+static std::atomic<int> _posts = ATOMIC_VAR_INIT(0);
+static std::atomic<int> _deletes = ATOMIC_VAR_INIT(0);
+
 #endif
 
 class ThreadPoolServer : public ThreadPool, public Server{
     ThreadSafeKVStore<std::string, std::string> hmap;
+    #ifndef LFREE
+    #ifndef STATS
 	ThreadSafeListenerQueue<int> queue;
+    #else
+    ThreadSafeListenerQueue<Data*> queue;
+    #endif
+    #else
+    LockFreeQueue<int> queue;
+    #endif
     #ifdef STATS
     std::mutex timeLock;
     std::ofstream fd;
@@ -52,6 +73,7 @@ public:
     ThreadPoolServer(int threads, int port, int listen);    //constructor
     void* run();         //thread run function
     void handleConn();   //connection handling
+    static void shutdown(int sig);
 };
 
 #endif

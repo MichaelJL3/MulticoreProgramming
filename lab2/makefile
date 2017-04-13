@@ -10,7 +10,7 @@
 COMPILER=g++
 WARNING=-Wall
 GDB=-g
-LIB=-lpthread -Lhashing/cryptopp565/ -lcrypto++
+LIB=-lpthread -Lhashing/cryptopp565/ -lcryptopp 
 VRS=-std=c++11
 FLAGS=$(WARNING) $(VRS)
 
@@ -47,6 +47,16 @@ endif
 
 endif
 
+#lock free flag
+ifdef LF
+FLAGS+= -DLFREE
+endif
+
+#global lock flag
+ifdef GL
+FLAGS+= -DBIGLOCK
+endif
+
 #run flags
 #turn on O for output piping to file
 ifdef O
@@ -55,15 +65,11 @@ endif
 
 #compile
 c comp:
-	$(COMPILER) $(FLAGS) -o $(NAME) network/*.cpp hashing/*.cpp httpreq/httpreq.cc httpreq/httpresp.cc threads/*.cpp $(PRGM).cpp $(LIB)
+	$(COMPILER) $(FLAGS) -g -o $(NAME) network/*.cpp hashing/*.cpp httpreq/httpreq.cc httpreq/httpresp.cc threads/*.cpp $(PRGM).cpp $(LIB)
 
 #run
 r rn run:
 	./$(PRGM) $(n) $(p) $(PIPE)
-
-#clean
-clean:
-	rm lab2
 
 #create a test file
 gen_test:
@@ -71,7 +77,7 @@ gen_test:
 
 #run httperf
 http:
-	httperf --server=$(addr) --port=$(p) --wsesslog $(sess),4,requests.txt
+	httperf --verbose --server=$(addr) --port=$(p) --wsesslog $(sess),4,requests.txt
 
 #analyze the run time stats
 stats:

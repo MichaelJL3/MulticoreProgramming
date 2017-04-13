@@ -25,7 +25,11 @@ V = value to store/retrieve
 template<typename K, typename V>
 class ThreadSafeKVStore{
     std::unordered_map<K, V> hashmap;
+    #ifndef BIGLOCK
     pthread_rwlock_t lock;
+    #else
+    pthread_mutex_t lock;
+    #endif
 public:
     ThreadSafeKVStore();					//constructor
     ~ThreadSafeKVStore();					//destructor
@@ -43,7 +47,11 @@ initializes reader/writer lock
 */
 template<typename K, typename V>
 ThreadSafeKVStore<K, V>::ThreadSafeKVStore(){
+    #ifndef BIGLOCK
 	pthread_rwlock_init(&lock, NULL);
+    #else
+    pthread_mutex_init(&lock, NULL);
+    #endif
 }
 
 /*
@@ -53,7 +61,11 @@ destroys reader/writer lock
 */
 template<typename K, typename V>
 ThreadSafeKVStore<K, V>::~ThreadSafeKVStore(){
+    #ifndef BIGLOCK
 	pthread_rwlock_destroy(&lock);
+    #else
+    pthread_mutex_destroy(&lock);
+    #endif
 }
 
 /*
@@ -64,11 +76,19 @@ uses write lock as map is modified
 */
 template<typename K, typename V>
 int ThreadSafeKVStore<K, V>::insert(const K k, const V v){
+    #ifndef BIGLOCK
     if(pthread_rwlock_wrlock(&lock))
     	return -1;
     hashmap[k]=v;
     if(pthread_rwlock_unlock(&lock))
     	return -1;
+    #else
+    if(pthread_mutex_lock(&lock))
+    	return -1;
+    hashmap[k]=v;
+    if(pthread_mutex_unlock(&lock))
+    	return -1;
+    #endif
 
     return 0;
 }
@@ -81,11 +101,19 @@ uses write lock as map is modified
 */
 template<typename K, typename V>
 int ThreadSafeKVStore<K, V>::accumulate(const K k, const V v){
+    #ifndef BIGLOCK
     if(pthread_rwlock_wrlock(&lock))
     	return -1;
     hashmap[k]+=v;
     if(pthread_rwlock_unlock(&lock))
     	return -1;
+    #else
+    if(pthread_mutex_lock(&lock))
+    	return -1;
+    hashmap[k]+=v;
+    if(pthread_mutex_unlock(&lock))
+    	return -1;
+    #endif
 
     return 0;
 }
@@ -99,11 +127,19 @@ uses write lock as map is modified
 */
 template<typename K, typename V>
 int ThreadSafeKVStore<K, V>::remove(const K k){
+    #ifndef BIGLOCK
     if(pthread_rwlock_wrlock(&lock))
 		return -1;
     hashmap.erase(k);
     if(pthread_rwlock_unlock(&lock))
     	return -1;
+    #else
+    if(pthread_mutex_lock(&lock))
+		return -1;
+    hashmap.erase(k);
+    if(pthread_mutex_unlock(&lock))
+    	return -1;
+    #endif
 
     return 0;
 }
@@ -121,6 +157,7 @@ uses read lock as map is not modified
 */
 template<typename K, typename V>
 int ThreadSafeKVStore<K, V>::lookup(const K k, V& v){
+    #ifndef BIGLOCK
     if(pthread_rwlock_rdlock(&lock))
     	return -1;
     if(hashmap.find(k)==hashmap.end()){
@@ -131,6 +168,18 @@ int ThreadSafeKVStore<K, V>::lookup(const K k, V& v){
     v=hashmap[k];
     if(pthread_rwlock_unlock(&lock))
     	return -1;
+    #else
+    if(pthread_mutex_lock(&lock))
+    	return -1;
+    if(hashmap.find(k)==hashmap.end()){
+        if(pthread_mutex_unlock(&lock))
+        	return -1;
+        return -1;
+    }
+    v=hashmap[k];
+    if(pthread_mutex_unlock(&lock))
+    	return -1;
+    #endif
 
     return 0;
 }
@@ -145,6 +194,7 @@ uses read lock
 template<typename K, typename V>
 int ThreadSafeKVStore<K, V>::sum(int &val){
     int sum=0;
+    #ifndef BIGLOCK
     if(pthread_rwlock_rdlock(&lock))
     	return -1;
     for(auto it=hashmap.begin(); it!=hashmap.end(); it++){
@@ -153,6 +203,16 @@ int ThreadSafeKVStore<K, V>::sum(int &val){
     val=sum;
     if(pthread_rwlock_unlock(&lock))
     	return -1;
+    #else
+    if(pthread_mutex_lock(&lock))
+    	return -1;
+    for(auto it=hashmap.begin(); it!=hashmap.end(); it++){
+        sum+=it->second;
+    }
+    val=sum;
+    if(pthread_mutex_unlock(&lock))
+    	return -1;
+    #endif
 
     return 0;
 }

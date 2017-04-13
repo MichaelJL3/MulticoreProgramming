@@ -1,0 +1,45 @@
+httperf --verbose --server=172.22.49.57 --port=8000 --wsesslog 1000,4,requests.txt
+httperf --verbose --client=0/1 --server=172.22.49.57 --port=8000 --uri=/ --send-buffer=4096 --recv-buffer=16384 --ssl-protocol=auto --wsesslog=1000,4.000,requests.txt
+httperf: maximum number of open descriptors = 65536
+reply-rate = 2590.2  
+session-rate = 25.8    
+reply-rate = 2580.4  
+session-rate = 25.8    
+reply-rate = 2618.0  
+session-rate = 26.2    
+reply-rate = 2532.4  
+session-rate = 25.4    
+reply-rate = 2511.8  
+session-rate = 25.0    
+reply-rate = 2499.6  
+session-rate = 25.0    
+reply-rate = 2446.0  
+session-rate = 24.4    
+Maximum connect burst length: 1
+
+Total: connections 1000 requests 100000 replies 100000 test-duration 39.592 s
+
+Connection rate: 25.3 conn/s (39.6 ms/conn, <=2 concurrent connections)
+Connection time [ms]: min 26.8 avg 39.6 max 58.9 median 39.5 stddev 4.5
+Connection time [ms]: connect 0.2
+Connection length [replies/conn]: 100.000
+
+Request rate: 2525.7 req/s (0.4 ms/req)
+Request size [B]: 296.0
+
+Reply rate [replies/s]: min 2446.0 avg 2539.8 max 2618.0 stddev 59.9 (7 samples)
+Reply time [ms]: response 0.4 transfer 0.0
+Reply size [B]: header 69.0 content 834.0 footer 0.0 (total 903.0)
+Reply status: 1xx=0 2xx=10129 3xx=0 4xx=89871 5xx=0
+
+CPU time [s]: user 18.98 system 20.60 (user 47.9% system 52.0% total 100.0%)
+Net I/O: 2960.4 KB/s (24.3*10^6 bps)
+
+Errors: total 0 client-timo 0 socket-timo 0 connrefused 0 connreset 0
+Errors: fd-unavail 0 addrunavail 0 ftab-full 0 other 0
+
+Session rate [sess/s]: min 24.40 avg 25.26 max 26.20 stddev 0.62 (1000/1000)
+Session: avg 1.00 connections/session
+Session lifetime [s]: 0.0
+Session failtime [s]: 0.0
+Session length histogram: 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1000
