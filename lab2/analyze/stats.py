@@ -116,7 +116,6 @@ def analyze():
 
     plt.legend(handles=lines)
     display('All_Runs.png', 'Time (seconds)', 'Requests')
-    exit()
 
 def average(arr):
     avg=0.0
