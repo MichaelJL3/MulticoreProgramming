@@ -2,14 +2,18 @@
 #ifndef LOCK_FREE_QUEUE
 #define LOCK_FREE_QUEUE
 
+#ifdef STATS
+#define ERR NULL
+#else
 const int ERR=-1;
+#endif
 
 #ifdef WIN32
 #include <windows.h>
-#define TIMEOUT 50
+#define TIMEOUT 250
 #else 
 #include <unistd.h>
-#define TIMEOUT 50000
+#define TIMEOUT 250000
 #endif
 
 template <typename T>

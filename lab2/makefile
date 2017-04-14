@@ -22,6 +22,7 @@ p=8000
 sess=1000
 reqs=100
 addr=localhost
+threads=1 2 4 8 16 32
 
 #compile flags
 #all flags
@@ -42,7 +43,7 @@ FLAGS+= -DSAFE
 endif
 #stats flag
 ifdef ST
-FLAGS+= -DSTATS
+FLAGS+= -DSTATS -fopenmp
 endif
 
 endif

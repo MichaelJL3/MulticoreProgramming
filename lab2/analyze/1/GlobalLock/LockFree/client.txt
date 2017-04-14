@@ -1,0 +1,145 @@
+httperf --verbose --server=172.22.49.57 --port=8000 --wsesslog 1000,4,requests.txt
+httperf --verbose --client=0/1 --server=172.22.49.57 --port=8000 --uri=/ --send-buffer=4096 --recv-buffer=16384 --ssl-protocol=auto --wsesslog=1000,4.000,requests.txt
+httperf: maximum number of open descriptors = 65536
+reply-rate = 360.0   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 360.0   
+session-rate = 3.6     
+reply-rate = 343.4   
+session-rate = 3.4     
+reply-rate = 356.6   
+session-rate = 3.6     
+reply-rate = 360.0   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 360.0   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 360.0   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 360.0   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 360.0   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 347.8   
+session-rate = 3.4     
+reply-rate = 352.2   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 360.0   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 344.4   
+session-rate = 3.4     
+reply-rate = 355.6   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 360.0   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 376.4   
+session-rate = 3.6     
+reply-rate = 343.6   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 360.0   
+session-rate = 3.6     
+reply-rate = 340.8   
+session-rate = 3.4     
+reply-rate = 359.2   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 360.0   
+session-rate = 3.6     
+reply-rate = 342.8   
+session-rate = 3.4     
+reply-rate = 357.2   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 360.0   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 360.0   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 360.0   
+session-rate = 3.6     
+reply-rate = 360.0   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 347.2   
+session-rate = 3.4     
+reply-rate = 352.8   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 343.0   
+session-rate = 3.4     
+reply-rate = 357.0   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 358.0   
+session-rate = 3.4     
+reply-rate = 342.0   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+reply-rate = 360.0   
+session-rate = 3.6     
+reply-rate = 340.0   
+session-rate = 3.4     
+Maximum connect burst length: 1
+
+Total: connections 1000 requests 100000 replies 100000 test-duration 286.212 s
+
+Connection rate: 3.5 conn/s (286.2 ms/conn, <=2 concurrent connections)
+Connection time [ms]: min 34.4 avg 286.2 max 314.4 median 286.5 stddev 13.9
+Connection time [ms]: connect 0.2
+Connection length [replies/conn]: 100.000
+
+Request rate: 349.4 req/s (2.9 ms/req)
+Request size [B]: 296.0
+
+Reply rate [replies/s]: min 340.0 avg 349.1 max 376.4 stddev 9.7 (57 samples)
+Reply time [ms]: response 2.9 transfer 0.0
+Reply size [B]: header 70.0 content 1673.0 footer 0.0 (total 1743.0)
+Reply status: 1xx=0 2xx=10129 3xx=0 4xx=89871 5xx=0
+
+CPU time [s]: user 138.19 system 147.98 (user 48.3% system 51.7% total 100.0%)
+Net I/O: 696.2 KB/s (5.7*10^6 bps)
+
+Errors: total 0 client-timo 0 socket-timo 0 connrefused 0 connreset 0
+Errors: fd-unavail 0 addrunavail 0 ftab-full 0 other 0
+
+Session rate [sess/s]: min 3.40 avg 3.49 max 3.60 stddev 0.10 (1000/1000)
+Session: avg 1.00 connections/session
+Session lifetime [s]: 0.3
+Session failtime [s]: 0.0
+Session length histogram: 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1000

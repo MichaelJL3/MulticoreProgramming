@@ -1,0 +1,49 @@
+httperf --verbose --server=172.22.49.57 --port=8000 --wsesslog 1000,4,requests.txt
+httperf --verbose --client=0/1 --server=172.22.49.57 --port=8000 --uri=/ --send-buffer=4096 --recv-buffer=16384 --ssl-protocol=auto --wsesslog=1000,4.000,requests.txt
+httperf: maximum number of open descriptors = 65536
+reply-rate = 1281.4  
+session-rate = 12.8    
+reply-rate = 2158.6  
+session-rate = 21.6    
+reply-rate = 2119.4  
+session-rate = 21.0    
+reply-rate = 2321.0  
+session-rate = 23.4    
+reply-rate = 2220.6  
+session-rate = 22.2    
+reply-rate = 2179.2  
+session-rate = 21.8    
+reply-rate = 2310.4  
+session-rate = 23.0    
+reply-rate = 2198.0  
+session-rate = 22.0    
+reply-rate = 2298.6  
+session-rate = 23.0    
+Maximum connect burst length: 1
+
+Total: connections 1000 requests 100000 replies 100000 test-duration 47.028 s
+
+Connection rate: 21.3 conn/s (47.0 ms/conn, <=2 concurrent connections)
+Connection time [ms]: min 25.8 avg 47.0 max 235.2 median 43.5 stddev 17.5
+Connection time [ms]: connect 0.2
+Connection length [replies/conn]: 100.000
+
+Request rate: 2126.4 req/s (0.5 ms/req)
+Request size [B]: 296.0
+
+Reply rate [replies/s]: min 1281.4 avg 2120.8 max 2321.0 stddev 322.7 (9 samples)
+Reply time [ms]: response 0.5 transfer 0.0
+Reply size [B]: header 69.0 content 638.0 footer 0.0 (total 707.0)
+Reply status: 1xx=0 2xx=10129 3xx=0 4xx=89871 5xx=0
+
+CPU time [s]: user 22.43 system 24.59 (user 47.7% system 52.3% total 100.0%)
+Net I/O: 2085.4 KB/s (17.1*10^6 bps)
+
+Errors: total 0 client-timo 0 socket-timo 0 connrefused 0 connreset 0
+Errors: fd-unavail 0 addrunavail 0 ftab-full 0 other 0
+
+Session rate [sess/s]: min 12.80 avg 21.26 max 23.40 stddev 3.24 (1000/1000)
+Session: avg 1.00 connections/session
+Session lifetime [s]: 0.0
+Session failtime [s]: 0.0
+Session length histogram: 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1000
