@@ -4,88 +4,119 @@ import numpy as np
 
 plt.style.use('ggplot')
 
+files=[
+    "1/GlobalLock/LockFree/", 
+    "1/GlobalLock/RegQueue/", 
+    "1/ReadWriteLock/LockFree/",
+    "1/ReadWriteLock/RegQueue/",
+    "2/GlobalLock/LockFree/", 
+    "2/GlobalLock/RegQueue/", 
+    "2/ReadWriteLock/LockFree/",
+    "2/ReadWriteLock/RegQueue/",
+    "4/GlobalLock/LockFree/", 
+    "4/GlobalLock/RegQueue/", 
+    "4/ReadWriteLock/LockFree/",
+    "4/ReadWriteLock/RegQueue/",
+    "8/GlobalLock/LockFree/", 
+    "8/GlobalLock/RegQueue/", 
+    "8/ReadWriteLock/LockFree/",
+    "8/ReadWriteLock/RegQueue/",
+    "16/GlobalLock/LockFree/", 
+    "16/GlobalLock/RegQueue/", 
+    "16/ReadWriteLock/LockFree/",
+    "16/ReadWriteLock/RegQueue/",
+    "32/GlobalLock/LockFree/", 
+    "32/GlobalLock/RegQueue/", 
+    "32/ReadWriteLock/LockFree/",
+    "32/ReadWriteLock/RegQueue/"
+    ]
+
+
 def analyze():
     allTimes=[]
-    files=["1/GlobalLock/LockFree/", "1/ReadWriteLock/LockFree/"]
 
     for filepath in files:
-    	fd=open(filepath+"stats.csv", "r")
-    
-    	times=[]
-    	get=[]
-    	post=[]
-    	delete=[]
-    	unknown=[]
+        fd=open(filepath+"stats.csv", "r")
 
-    	percentsReqs=[]
-    	percentsTime=[]
-    	request_times=[0,0,0,0]
-    	request_amounts=[0,0,0,0]
-    	totalReqs=0
+        times=[]
+        gets=[]
+        post=[]
+        delete=[]
+        unknown=[]
 
-    	for line in fd:
-        	req=line.split(",")
-        	reqType=req[0]
-        	reqTime=req[1]
-        	times.append(reqTime)
-        	reqTime=float(reqTime)
-        	totalReqs+=1
+        percentsReqs=[]
+        percentsTime=[]
+        request_times=[0,0,0,0]
+        request_amounts=[0,0,0,0]
+        totalReqs=0
 
-        	if(reqType=="GET"):
-            		request_amounts[0]+=1
-            		request_times[0]+=reqTime
-            		get.append(reqTime)
-        	elif(reqType=="POST"):
-            		request_amounts[1]+=1
-            		request_times[1]+=reqTime
-            		post.append(reqTime)
-        	elif(reqType=="DELETE"):
-            		request_amounts[2]+=1
-            		request_times[2]+=reqTime
-            		delete.append(reqTime)
-        	else:
-            		request_amounts[3]+=1
-            		request_times[3]+=reqTime
-            		unknown.append(reqTime)
+        for line in fd:
+            req=line.split(",")
+            reqType=req[0]
+            reqTime=req[1]
+            reqTime=float(reqTime)
+            times.append(reqTime)
+            totalReqs+=1
 
-    	for i in range(len(request_times)):
-        	amount=request_amounts[i]
-        	percentsReqs.append((amount/totalReqs)*100)
-        	if(not amount):
-            		amount=1
-        	percentsTime.append((request_times[i]/amount)*100)
+            if(reqType=="GET"):
+                request_amounts[0]+=1
+                request_times[0]+=reqTime
+                gets.append(reqTime)
+            elif(reqType=="POST"):
+                request_amounts[1]+=1
+                request_times[1]+=reqTime
+                post.append(reqTime)
+            elif(reqType=="DELETE"):
+                request_amounts[2]+=1
+                request_times[2]+=reqTime
+                delete.append(reqTime)
+            else:
+                request_amounts[3]+=1
+                request_times[3]+=reqTime
+                unknown.append(reqTime)
 
-    	amountGraph(filepath+'amounts.jpg', request_amounts)
-    	piTypeGraph(percentsReqs, filepath+'percentages_Requests.jpg')
-    	piTimeGraph(percentsTime, filepath+'percentages_Times.jpg')
-    	graph(times, filepath+'graph.jpg', 'all requests')
-    	graph(get, filepath+'getGraph.jpg', 'get requests')
-    	graph(post, filepath+'postGraph.jpg', 'post requests')
-    	graph(delete, filepath+'deleteGraph.jpg', 'delete requests')
-    	graphType(filepath+'typesGraph.jpg', get, post, delete, unknown)
+        for i in range(len(request_times)):
+            amount=request_amounts[i]
+            percentsReqs.append((amount/totalReqs)*100)
+            if(not amount):
+                amount=1
+            percentsTime.append((request_times[i]/amount)*100)
 
-    	mx=max(times)
-    	mn=min(times)
-    
-    	times.sort()
-    	size=len(times)
-    	if(size%2==0):
+        amountGraph(filepath+'amounts.png', request_amounts)
+        piTypeGraph(percentsReqs, filepath+'percentages_Requests.png')
+        piTimeGraph(percentsTime, filepath+'percentages_Times.png')
+        graph(gets, filepath+'getGraph.png', 'get requests')
+        graph(post, filepath+'postGraph.png', 'post requests')
+        graph(delete, filepath+'deleteGraph.png', 'delete requests')
+        graphType(filepath+'typesGraph.png', gets, post, delete, unknown)
+        graph(times, filepath+'total.png', 'all requests')
+
+        mx=max(times)
+        mn=min(times)
+
+        times.sort()
+        size=len(times)
+        if(size%2==0):
         	mdn=(float(times[int(size/2)-1])+float(times[int(size/2)]))/2
-    	else:
+        else:
         	mdn=times[int(size/2)]
 
-    	avg=average(times)
+        avg=average(times)
 
-    	print("Maximum Time: "+str(mx)+"\nMinimum Time: "+str(mn)+"\nMedian: "+str(mdn)+"\nAverage: "+str(avg))
+        print("Maximum Time: "+str(mx)+"\nMinimum Time: "+str(mn)+"\nMedian: "+str(mdn)+"\nAverage: "+str(avg))
 
-	allTimes.append(times)
+        allTimes.append(times)
 
-    count=-1
-    for times in allTimes:
-    	line, =plt.plot(times, linewidth=2.0, label=files[++count]);
-    	plt.legend(handles=[line])
-    
-    display('All Runs', 'Time (seconds)', 'Requests')
+    count=0
+    lines=[]
+    for timeArr in allTimes:
+        line, =plt.plot(timeArr, linewidth=2.0, label=files[count]);
+        lines.append(line)
+        count+=1
+
+    plt.legend(handles=lines)
+    display('All_Runs.png', 'Time (seconds)', 'Requests')
+    exit()
 
 def average(arr):
     avg=0.0
@@ -140,11 +171,14 @@ def graphType(name, gets, posts, deletes, unknowns):
     display(name, 'Requests', 'Time (seconds)')
 
 def display(save, x, y):
-    plt.grid(True)
+    #plt.grid(True)
     plt.ylabel(x)
     plt.xlabel(y)
-    plt.title(save)
+    plt.title(save)    
+    #fig = plt.figure()
+    #fig.savefig(save, dpi=fig.dpi)
     plt.savefig(save)
+    plt.show()
 
 if __name__ == "__main__":
     analyze()
