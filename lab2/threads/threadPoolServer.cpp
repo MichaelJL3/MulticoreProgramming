@@ -32,7 +32,7 @@ ThreadPoolServer::ThreadPoolServer(int threads, int port, int listen=1024) : Thr
     #ifdef STATS
     instance=this;
     signal(SIGINT, ThreadPoolServer::shutdown);
-    fd.open ("analyze/"+std::to_string(threads)+PATH+ALGO_PATH+"/stats.csv", std::ofstream::out | std::ofstream::app);
+    fd.open ("analyze/"+std::to_string(threads)+PATH+ALGO_PATH+"/stats.csv", std::ofstream::out);
     _posts=0;
     _gets=0;
     _deletes=0;
@@ -164,16 +164,14 @@ void* ThreadPoolServer::run(){
     bool alive;
 
     Data *dt;
-    clock_t en_time, st_time;
-    double wall_st, wall_en;
+    std::chrono::high_resolution_clock::time_point st, en;
 
     while(true){
 
         //wait for connection
         queue.listen(dt);
         conn=dt->conn;
-        st_time=dt->st;
-	wall_st=dt->wall_st;
+	st=dt->st;
 
         HTTPReq req(conn);
 	    code=404;
@@ -210,7 +208,7 @@ void* ThreadPoolServer::run(){
 
         //push back on queue or close connection
         if(alive){
-	    dt->st=clock();
+	    dt->st=std::chrono::high_resolution_clock::now();
             queue.push(dt);
 	}
         else{
@@ -218,10 +216,9 @@ void* ThreadPoolServer::run(){
             closeConn(conn);
         }
 
-        en_time=clock();
-	wall_en=omp_get_wtime();
+        en=std::chrono::high_resolution_clock::now();
         timeLock.lock();
-        fd<<reqType+","+std::to_string(wall_en-wall_st)<<","<<std::to_string(((double)en_time-st_time)/CLOCKS_PER_SEC)+"\n";
+        fd<<reqType+","+std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(en-st).count())<<"\n";
         timeLock.unlock();
 
         //optional logging
@@ -242,7 +239,7 @@ void ThreadPoolServer::handleConn(){
     #ifndef STATS
     queue.push(this->getConn());
     #else
-    Data *dt=new Data{this->getConn(), clock(), omp_get_wtime()};
+    Data *dt=new Data{this->getConn(), std::chrono::high_resolution_clock::now()};
     queue.push(dt);
     #endif
 }

@@ -1,44 +1,44 @@
 httperf --verbose --server=172.22.49.57 --port=8000 --wsesslog 1000,4,requests.txt
 httperf --verbose --client=0/1 --server=172.22.49.57 --port=8000 --uri=/ --send-buffer=4096 --recv-buffer=16384 --ssl-protocol=auto --wsesslog=1000,4.000,requests.txt
 httperf: maximum number of open descriptors = 65536
-reply-rate = 2801.0  
+reply-rate = 2866.0  
+session-rate = 28.6    
+reply-rate = 2797.6  
 session-rate = 28.0    
-reply-rate = 2762.2  
-session-rate = 27.6    
-reply-rate = 2656.8  
-session-rate = 26.6    
-reply-rate = 2629.8  
-session-rate = 26.2    
-reply-rate = 2648.4  
+reply-rate = 2778.0  
+session-rate = 27.8    
+reply-rate = 2645.8  
 session-rate = 26.4    
-reply-rate = 2561.4  
-session-rate = 25.6    
-reply-rate = 2547.4  
-session-rate = 25.6    
+reply-rate = 2680.0  
+session-rate = 26.8    
+reply-rate = 2607.8  
+session-rate = 26.0    
+reply-rate = 2603.6  
+session-rate = 26.0    
 Maximum connect burst length: 1
 
-Total: connections 1000 requests 100000 replies 100000 test-duration 37.776 s
+Total: connections 1000 requests 100000 replies 100000 test-duration 36.981 s
 
-Connection rate: 26.5 conn/s (37.8 ms/conn, <=2 concurrent connections)
-Connection time [ms]: min 22.5 avg 37.8 max 60.8 median 37.5 stddev 4.9
+Connection rate: 27.0 conn/s (37.0 ms/conn, <=2 concurrent connections)
+Connection time [ms]: min 22.7 avg 37.0 max 52.9 median 36.5 stddev 4.6
 Connection time [ms]: connect 0.2
 Connection length [replies/conn]: 100.000
 
-Request rate: 2647.2 req/s (0.4 ms/req)
+Request rate: 2704.1 req/s (0.4 ms/req)
 Request size [B]: 296.0
 
-Reply rate [replies/s]: min 2547.4 avg 2658.1 max 2801.0 stddev 94.7 (7 samples)
+Reply rate [replies/s]: min 2603.6 avg 2711.3 max 2866.0 stddev 102.8 (7 samples)
 Reply time [ms]: response 0.4 transfer 0.0
-Reply size [B]: header 70.0 content 1454.0 footer 0.0 (total 1524.0)
+Reply size [B]: header 70.0 content 1273.0 footer 0.0 (total 1343.0)
 Reply status: 1xx=0 2xx=10129 3xx=0 4xx=89871 5xx=0
 
-CPU time [s]: user 17.67 system 20.10 (user 46.8% system 53.2% total 100.0%)
-Net I/O: 4707.0 KB/s (38.6*10^6 bps)
+CPU time [s]: user 17.18 system 19.79 (user 46.5% system 53.5% total 100.0%)
+Net I/O: 4331.3 KB/s (35.5*10^6 bps)
 
 Errors: total 0 client-timo 0 socket-timo 0 connrefused 0 connreset 0
 Errors: fd-unavail 0 addrunavail 0 ftab-full 0 other 0
 
-Session rate [sess/s]: min 25.60 avg 26.47 max 28.00 stddev 0.93 (1000/1000)
+Session rate [sess/s]: min 26.00 avg 27.04 max 28.60 stddev 1.04 (1000/1000)
 Session: avg 1.00 connections/session
 Session lifetime [s]: 0.0
 Session failtime [s]: 0.0

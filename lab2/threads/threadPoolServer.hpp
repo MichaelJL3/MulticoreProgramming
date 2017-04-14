@@ -60,17 +60,16 @@
 #include <iostream>
 #include <signal.h>
 #include <mutex>
-#include <ctime>
 #include <fstream>
 #include <string>
-#include <omp.h>
 #include <vector>
 #include <algorithm>
+#include <chrono>
+#include <ctime>
 
 struct Data{
     int conn;
-    clock_t st;
-    double wall_st;
+    std::chrono::high_resolution_clock::time_point st;
 };
 
 static bool sortLessThan(double lft, double rht)
