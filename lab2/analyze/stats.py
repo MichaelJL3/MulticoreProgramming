@@ -54,68 +54,68 @@ def analyze():
             req=line.split(",")
             reqType=req[0]
             reqTime=req[1]
-            reqTime=float(reqTime)
+            reqTime=float(reqTime)*.001
             times.append(reqTime)
-            totalReqs+=1
+        #    totalReqs+=1
 
             if(reqType=="GET"):
-                request_amounts[0]+=1
-                request_times[0]+=reqTime
+        #        request_amounts[0]+=1
+        #        request_times[0]+=reqTime
                 gets.append(reqTime)
-            elif(reqType=="POST"):
-                request_amounts[1]+=1
-                request_times[1]+=reqTime
-                post.append(reqTime)
-            elif(reqType=="DELETE"):
-                request_amounts[2]+=1
-                request_times[2]+=reqTime
-                delete.append(reqTime)
-            else:
-                request_amounts[3]+=1
-                request_times[3]+=reqTime
-                unknown.append(reqTime)
+        #    elif(reqType=="POST"):
+        #        request_amounts[1]+=1
+        #        request_times[1]+=reqTime
+        #        post.append(reqTime)
+        #    elif(reqType=="DELETE"):
+        #        request_amounts[2]+=1
+        #        request_times[2]+=reqTime
+        #        delete.append(reqTime)
+        #    else:
+        #        request_amounts[3]+=1
+        #        request_times[3]+=reqTime
+        #        unknown.append(reqTime)
 
-        for i in range(len(request_times)):
-            amount=request_amounts[i]
-            percentsReqs.append((amount/totalReqs)*100)
-            if(not amount):
-                amount=1
-            percentsTime.append((request_times[i]/amount)*100)
+        #for i in range(len(request_times)):
+        #    amount=request_amounts[i]
+        #    percentsReqs.append((amount/totalReqs)*100)
+        #    if(not amount):
+        #        amount=1
+        #    percentsTime.append((request_times[i]/amount)*100)
 
-        amountGraph(filepath+'amounts.png', request_amounts)
-        piTypeGraph(percentsReqs, filepath+'percentages_Requests.png')
-        piTimeGraph(percentsTime, filepath+'percentages_Times.png')
+        #amountGraph(filepath+'amounts.png', request_amounts)
+        #piTypeGraph(percentsReqs, filepath+'percentages_Requests.png')
+        #piTimeGraph(percentsTime, filepath+'percentages_Times.png')
         graph(gets, filepath+'getGraph.png', 'get requests')
-        graph(post, filepath+'postGraph.png', 'post requests')
-        graph(delete, filepath+'deleteGraph.png', 'delete requests')
-        graphType(filepath+'typesGraph.png', gets, post, delete, unknown)
-        graph(times, filepath+'total.png', 'all requests')
+        #graph(post, filepath+'postGraph.png', 'post requests')
+        #graph(delete, filepath+'deleteGraph.png', 'delete requests')
+        #graphType(filepath+'typesGraph.png', gets, post, delete, unknown)
+        #graph(times, filepath+'total.png', 'all requests')
 
-        mx=max(times)
-        mn=min(times)
+        #times.sort()
+        #mx=times[len(times)-1]
+        #mn=times[0]
+        #size=len(times)
+        #if(size%2==0):
+        #	mdn=(float(times[int(size/2)-1])+float(times[int(size/2)]))/2
+        #else:
+        #	mdn=times[int(size/2)]
 
-        times.sort()
-        size=len(times)
-        if(size%2==0):
-        	mdn=(float(times[int(size/2)-1])+float(times[int(size/2)]))/2
-        else:
-        	mdn=times[int(size/2)]
+        #avg=average(times)
 
-        avg=average(times)
+        #print("Maximum Time: "+str(mx)+"\nMinimum Time: "+str(mn)+"\nMedian: "+str(mdn)+"\nAverage: "+str(avg))
 
-        print("Maximum Time: "+str(mx)+"\nMinimum Time: "+str(mn)+"\nMedian: "+str(mdn)+"\nAverage: "+str(avg))
+        #allTimes.append(times)
 
-        allTimes.append(times)
+    #count=0
+    #lines=[]
+    #for timeArr in allTimes:
+        #line, =plt.plot(timeArr, linewidth=2.0, label=files[count])
+        #lines.append(line)
+        #count+=1
+        #plt.legend(handles=lines)
 
-    count=0
-    lines=[]
-    for timeArr in allTimes:
-        line, =plt.plot(timeArr, linewidth=2.0, label=files[count]);
-        lines.append(line)
-        count+=1
-
-    plt.legend(handles=lines)
-    display('All_Runs.png', 'Time (seconds)', 'Requests')
+    #plt.legend(handles=lines)
+    #display('All_Runs.png', 'Time (seconds)', 'Requests')
 
 def average(arr):
     avg=0.0
