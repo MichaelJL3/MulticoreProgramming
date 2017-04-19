@@ -3,7 +3,7 @@
 
 /*************************************\
 
- lab2.cpp
+ lab4.cpp
  Author: Michael Laucella
  Last Modified: 3/8/17
 
