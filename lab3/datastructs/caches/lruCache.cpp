@@ -71,8 +71,8 @@ bool LRUCache<K,V>::erase(const K key){
         --_count;
 
         //erase key and value from list
-        curr->key=0;
-        curr->val=0;
+        curr->key='\0';
+        curr->val='\0';
         pthread_rwlock_unlock(&lock);
         return true;
     }

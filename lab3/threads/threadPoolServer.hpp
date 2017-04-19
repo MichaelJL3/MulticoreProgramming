@@ -37,7 +37,6 @@
 
 #define PATH ""
 #define ALGO_PATH ""
-#define CACHE_SIZE 150
 
 #ifdef STATS
 #ifndef BIGLOCK
@@ -81,9 +80,11 @@ static bool sortLessThan(double lft, double rht){
 
 #endif
 
+const size_t CACHE_SIZE=150;
+
 class ThreadPoolServer : public ThreadPool, public Server{
     ThreadSafeKVStore<std::string, std::string> hashes;
-    LRUCache<std::string, std::string> cache(CACHE_SIZE);
+    LRUCache<std::string, std::string> cache;
 
     #ifndef LFREE
     #ifndef STATS

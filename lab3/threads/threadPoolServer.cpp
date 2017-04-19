@@ -27,7 +27,7 @@
 \*************************************/
 
 //constructor
-ThreadPoolServer::ThreadPoolServer(int threads, int port, int listen=1024) : ThreadPool(threads), Server(1024, listen, port) {
+ThreadPoolServer::ThreadPoolServer(int threads, int port, int listen=1024) : ThreadPool(threads), Server(1024, listen, port), cache(CACHE_SIZE) {
     numThreads=threads;
     #ifdef STATS
     instance=this;
@@ -39,6 +39,7 @@ ThreadPoolServer::ThreadPoolServer(int threads, int port, int listen=1024) : Thr
     #endif
 }
 
+#ifdef STATS
 void ThreadPoolServer::handle_shutdown(){
     size_t pos;
     fd.flush();
@@ -48,50 +49,62 @@ void ThreadPoolServer::handle_shutdown(){
     std::string line;
     std::string type;    
 
-    while( getline(stats,line) ){
-	pos=line.find(",");
+    if(stats.is_open()){
+        while( getline(stats,line) ){
+	     pos=line.find(",");
 
-	type=line.substr(0,pos);
-	if(type=="GET")
-		++_gets;
-	else if(type=="POST")
-		++_posts;
-	else if(type=="DELETE")
-		++_deletes;
+	     if(pos!=std::string::npos){
+	          type=line.substr(0,pos);
+	          if(type=="GET")
+		        ++_gets;
+	          else if(type=="POST")
+		        ++_posts;
+	          else if(type=="DELETE")
+		        ++_deletes;
 
-	line=line.substr(pos+1);
-	pos=line.find(",");
-	line=line.substr(0,pos);
-      	times.push_back(std::stod(line));
+         	  line=line.substr(pos+1);
+	          pos=line.find(",");
+	
+                  if(pos!=std::string::npos){
+                       line=line.substr(0,pos);
+      	               times.push_back(std::stod(line));
+                  }
+	     }
+        }
     }
     stats.close();
     
     std::sort(times.begin(), times.end(), sortLessThan);
 
     avg=0;
-    for(auto time:times){
-         avg+=time;
-    }
-    avg/=times.size();
-    max=times[times.size()-1];
-    min=times[0];
+    med=0;
+    min=0;
+    max=0;
+    if(times.size()){
+         for(auto time:times){
+             avg+=time;
+         }
+   
+         avg/=times.size();
+         max=times[times.size()-1];
+         min=times[0];
 
-    if(!(times.size()%2))
-         med=times[times.size()/2+(times.size()+1)/2];
-    else
-         med=times[times.size()/2];
+         if(!(times.size()%2))
+              med=times[times.size()/2+(times.size()+1)/2];
+         else
+              med=times[times.size()/2];
+    }
 
     std::cout<<"\nShuttingdown:\nGets: "<<_gets<<"\nPosts: "<<_posts<<"\nDeletes: "<<_deletes<<"\n";
     std::cout<<"Stats\nAvg: "<<avg<<"\nMin: "<<min<<"\nMax: "<<max<<"\nMedian: "<<med<<"\n";
 }
 
 void ThreadPoolServer::shutdown(int sig){
-    #ifdef STATS
     instance->handle_shutdown();
-    #endif
 
     exit(sig);
 }
+#endif
 
 //thread run function
 #ifndef STATS

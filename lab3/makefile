@@ -14,7 +14,7 @@ LIB=-lpthread -Lhashing/cryptopp565/ -lcryptopp
 VRS=-std=c++11
 FLAGS=$(WARNING) $(VRS)
 
-PRGM=lab2
+PRGM=lab4
 NAME=$(PRGM)
 
 n=8
@@ -66,7 +66,7 @@ endif
 
 #compile
 c comp:
-	$(COMPILER) $(FLAGS) -g -o $(NAME) network/*.cpp hashing/*.cpp httpreq/httpreq.cc httpreq/httpresp.cc threads/*.cpp $(PRGM).cpp $(LIB)
+	$(COMPILER) $(FLAGS) -g -o $(NAME) files/*.cpp network/*.cpp hashing/*.cpp httpreq/httpreq.cc httpreq/httpresp.cc threads/*.cpp $(PRGM).cpp $(LIB)
 
 #run
 r rn run:
