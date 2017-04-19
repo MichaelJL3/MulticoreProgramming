@@ -47,6 +47,10 @@ int main(int argc, char** argv){
     puts("Example Usage: ./server (num_threads) (port_num) (num_listeners)");
     printf("Starting Server Threads: %d\nListening On Port: %d\n", threads, port);
 
+    //delete previous runs storage
+    puts("Clearing Stored Files");
+    system("exec rm -r stored/*");
+
     //instantiate a server object and start
     ThreadPoolServer server(threads, port, listen);
     server.createThreads();

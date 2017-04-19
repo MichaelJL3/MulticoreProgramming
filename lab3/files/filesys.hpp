@@ -3,10 +3,10 @@
 
 #include <fstream>
 
-#define PATH ""
+const std::string STORAGE_PATH="stored/";
 
 bool wrFile(std::string filename, std::string content){
-    std::ofstream fd(PATH+filename, std::ofstream::out);
+    std::ofstream fd(STORAGE_PATH+filename, std::ofstream::out);
     
     if(fd.is_open()){
         fd<<content;
@@ -20,7 +20,7 @@ bool wrFile(std::string filename, std::string content){
 }
 
 bool rdFile(std::string filename, std::string &content){
-    std::ifstream fd(PATH+filename, std::ofstream::out);
+    std::ifstream fd(STORAGE_PATH+filename, std::ofstream::out);
     std::string line;
 
     if(!fd.is_open()){
@@ -38,5 +38,5 @@ bool rdFile(std::string filename, std::string &content){
 }
 
 bool dlFile(std::string filename){
-    return (std::renove(PATH+filename)?false:true);
+    return (std::renove(STORAGE_PATH+filename)?false:true);
 }
