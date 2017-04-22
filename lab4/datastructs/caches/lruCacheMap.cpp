@@ -1,4 +1,17 @@
 
+/*************************************\
+
+ lruCacheMap.hpp
+ Author: Michael Laucella
+ Last Modified: 4/22/17
+
+ skeletal layout for LRU cache scheme
+
+ the cache is implemented using a map
+ and is thread safe
+
+\*************************************/
+
 //constructor
 template<typename K, typename V>
 LRUCacheMap<K,V>::LRUCacheMap(size_t size):_size(size){

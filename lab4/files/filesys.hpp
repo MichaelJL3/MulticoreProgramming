@@ -5,7 +5,7 @@
 
  filesys.hpp
  Author: Michael Laucella
- Last Modified: 4/18/17
+ Last Modified: 4/22/17
 
  basic functions for thread safe file
  manipulation
@@ -19,15 +19,19 @@
 
 #include <fstream>
 #include <string>
+#include <pthread.h>
 
-//path where server files are stored
-const std::string STORAGE_PATH="stored/";
-
-//write to a file
-bool wrFile(std::string filename, std::string content);
-
-//read the contents of a file
-bool rdFile(std::string filename, std::string &content);
-
-//delete a file
-bool dlFile(std::string filename);
+class ThreadSafeFiles{
+    pthread_rwlock_t lock;
+    const std::string PATH;
+    std::ofstream fd;
+    ThreadSafeFiles();
+public:
+    ThreadSafeFiles(const std::string path);
+    //write to a file
+    bool wrFile(std::string filename, std::string content);
+    //read the contents of a file
+    bool rdFile(std::string filename, std::string &content);
+    //delete a file
+    bool dlFile(std::string filename);
+};

@@ -5,7 +5,7 @@
 
  threadPoolServer.cpp
  Author: Michael Laucella
- Last Modified: 3/8/17
+ Last Modified: 4/22/17
 
  implements the threadPoolServer class in
  threadPoolServer.hpp
@@ -27,7 +27,7 @@
 \*************************************/
 
 //constructor
-ThreadPoolServer::ThreadPoolServer(int threads, int port, int listen=1024) : ThreadPool(threads), Server(1024, listen, port), cache(CACHE_SIZE) {
+ThreadPoolServer::ThreadPoolServer(int threads, int port, int listen=1024) : ThreadPool(threads), Server(1024, listen, port), cache(CACHE_SIZE), files("stored/") {
     numThreads=threads;
     #ifdef STATS
     instance=this;
@@ -133,14 +133,14 @@ void* ThreadPoolServer::run(){
             }
 
             if(reqType=="GET")
-                code=(cache.get(key, body)||rdFile(user, body)?200:404);
+                code=(cache.get(key, body)||files.rdFile(user, body)?200:404);
             else if(reqType=="POST"){
                 body=req.getBody();
                 cache.insert(key, body);
-                code=(wrFile(user, body)?200:500);
+                code=(files.wrFile(user, body)?200:500);
             }
             else if(reqType=="DELETE")
-                code=(cache.erase(key)||dlFile(user)?200:404);
+                code=(cache.erase(key)||files.dlFile(user)?200:404);
         }
 
         //check for keep alive connection
@@ -199,13 +199,13 @@ void* ThreadPoolServer::run(){
             }
 
             if(reqType=="GET")
-                code=(rdFile(user, body)?200:404);
+                code=(files.rdFile(user, body)?200:404);
             else if(reqType=="POST"){
                 body=req.getBody();
-                code=(wrFile(user, body)?200:500);
+                code=(files.wrFile(user, body)?200:500);
             }
             else if(reqType=="DELETE")
-                code=(dlFile(user)?200:404);
+                code=(files.dlFile(user)?200:404);
         }
 
         //check for keep alive connection
@@ -273,14 +273,14 @@ void* ThreadPoolServer::run(){
             }
 
             if(reqType=="GET")
-                code=(cache.get(key, body)||rdFile(user, body)?200:404);
+                code=(cache.get(key, body)||files.rdFile(user, body)?200:404);
             else if(reqType=="POST"){
                 body=req.getBody();
                 cache.insert(key, body);
-                code=(wrFile(user, body)?200:500);
+                code=(files.wrFile(user, body)?200:500);
             }
             else if(reqType=="DELETE")
-                code=(cache.erase(key)?200:404||dlFile(user)?200:404);
+                code=(cache.erase(key)?200:404||files.dlFile(user)?200:404);
         }
 
         //check for keep alive connection

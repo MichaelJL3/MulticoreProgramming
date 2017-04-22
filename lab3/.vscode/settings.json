@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "functional": "cpp",
-        "tuple": "cpp",
-        "xutility": "cpp",
-        "cstdio": "cpp"
-    }
-}

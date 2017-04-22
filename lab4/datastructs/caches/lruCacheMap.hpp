@@ -1,6 +1,19 @@
 
 #pragma once
 
+/*************************************\
+
+ lruCacheMap.hpp
+ Author: Michael Laucella
+ Last Modified: 4/22/17
+
+ skeletal layout for LRU cache scheme
+
+ the cache is implemented using a map
+ and is thread safe
+
+\*************************************/
+
 #include <unordered_map>
 #include <utility>
 #include <pthread.h>
@@ -26,6 +39,7 @@ public:
 
 #include "lruCacheMap.cpp"
 
+//print the cache
 template<typename K, typename V>
 std::ostream& operator<<(std::ostream& os, const LRUCacheMap<K,V>& cache){
     auto temp=cache.getMap();

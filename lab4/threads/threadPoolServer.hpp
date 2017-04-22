@@ -6,7 +6,7 @@
 
  threadPoolServer.hpp
  Author: Michael Laucella
- Last Modified: 3/8/17
+ Last Modified: 4/22/17
 
  skeleton for mulithreaded tcp/ip server
 
@@ -89,6 +89,7 @@ const size_t CACHE_SIZE=150;
 
 class ThreadPoolServer : public ThreadPool, public Server{
     ThreadSafeKVStore<std::string, std::string> hashes;
+    ThreadSafeFiles files;
     
     #ifdef CACHE_LIST
     LRUCache<std::string, std::string> cache;
