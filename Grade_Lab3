@@ -1,0 +1,12 @@
+Grade: 95
+Feedback:
+(i) Excellent Tabulation of results and graphs. (ii) Factors reasonsed out well - locks, threads/connections, etc. (iii) Could have compared mean, median and explained the difference. (iv) Good code documentation and structure.
+SplitUp:
+Experiments for understanding/improving performance: 35
+Correct Implementation - Counting Requests: 10
+Correct Implementation - Aggregating Min/Max/Med Values: 10
+Implementation - Consideration of First Request, etc (Understanding what they're accounting): 10
+Readable statistics: 10
+Printing Statistics - Console/File: 10
+Code structure and complexity: 10
+Doesn't compile and/or doesn't run successfully: 0
