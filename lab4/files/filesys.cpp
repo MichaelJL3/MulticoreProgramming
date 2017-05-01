@@ -17,10 +17,19 @@
 
 \*************************************/
 
+ThreadSafeFiles::ThreadSafeFiles(const std::string path){
+    STORAGE_PATH=path;
+    pthread_rwlock_init(&lock, nullptr);
+}
+
+ThreadSafeFiles::~ThreadSafeFiles(){
+    pthread_rwlock_destroy(&lock);
+}
+
 //write to a file
 bool ThreadSafeFiles::wrFile(std::string filename, std::string content){
     pthread_rwlock_wrlock(&lock);
-    fd=open(STORAGE_PATH+filename, std::ofstream::out);
+    fd.open(STORAGE_PATH+filename, std::ofstream::out);
     
     if(fd.is_open()){
         fd<<content;
@@ -58,9 +67,9 @@ bool ThreadSafeFiles::rdFile(std::string filename, std::string &content){
 }
 
 //delete a file
-bool dlFile(std::string filename){
+bool ThreadSafeFiles::dlFile(std::string filename){
     pthread_rwlock_wrlock(&lock);
-    bool ret=(std::remove(std::string(STORAGE_PATH+filename).c_str())?false:true);
+    bool ret=(std::remove((STORAGE_PATH+filename).c_str())?false:true);
     pthread_rwlock_unlock(&lock);
     return ret;
 }

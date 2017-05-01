@@ -17,6 +17,8 @@ FLAGS=$(WARNING) $(VRS)
 PRGM=lab4
 NAME=$(PRGM)
 
+CRNCH3=172.22.49.57
+
 n=8
 p=8000
 sess=1000

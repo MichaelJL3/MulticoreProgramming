@@ -23,11 +23,12 @@
 
 class ThreadSafeFiles{
     pthread_rwlock_t lock;
-    const std::string PATH;
+    std::string STORAGE_PATH;
     std::ofstream fd;
     ThreadSafeFiles();
 public:
     ThreadSafeFiles(const std::string path);
+    ~ThreadSafeFiles();
     //write to a file
     bool wrFile(std::string filename, std::string content);
     //read the contents of a file

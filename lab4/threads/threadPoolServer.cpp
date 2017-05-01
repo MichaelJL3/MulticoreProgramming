@@ -33,6 +33,8 @@ ThreadPoolServer::ThreadPoolServer(int threads, int port, int listen=1024) : Thr
     instance=this;
     signal(SIGINT, ThreadPoolServer::shutdown);
     fd.open ("analyze/"+std::to_string(threads)+PATH+ALGO_PATH+"/stats.csv", std::ofstream::out);
+    if(!fd.is_open())
+        std::cout<<"Failed to open stats file: " << std::to_string(threads) << PATH << ALGO_PATH << "/stats.csv\n";
     _posts=0;
     _gets=0;
     _deletes=0;
@@ -42,6 +44,11 @@ ThreadPoolServer::ThreadPoolServer(int threads, int port, int listen=1024) : Thr
 #ifdef STATS
 void ThreadPoolServer::handle_shutdown(){
     size_t pos;
+    double avg=0;
+    double min=0;
+    double max=0;
+    double med=0;
+
     fd.flush();
     fd.close();
     
@@ -51,35 +58,28 @@ void ThreadPoolServer::handle_shutdown(){
 
     if(stats.is_open()){
         while( getline(stats,line) ){
-         pos=line.find(",");
+            pos=line.find(",");
 
-         if(pos!=std::string::npos){
-              type=line.substr(0,pos);
-              if(type=="GET")
-                ++_gets;
-              else if(type=="POST")
-                ++_posts;
-              else if(type=="DELETE")
-                ++_deletes;
+            if(pos!=std::string::npos){
+                type=line.substr(0,pos);
+                if(type=="GET")
+                    ++_gets;
+                else if(type=="POST")
+                    ++_posts;
+                else if(type=="DELETE")
+                    ++_deletes;
 
-              line=line.substr(pos+1);
-              pos=line.find(",");
-    
-                  if(pos!=std::string::npos){
-                       line=line.substr(0,pos);
-                       times.push_back(std::stod(line));
-                  }
-         }
+                line=line.substr(pos+1);
+                times.push_back(std::stod(line));
+            }
         }
+    }else{
+        std::cout<<"Failed to open stats file: " << std::to_string(numThreads) << PATH << ALGO_PATH << "/stats.csv\n";
     }
     stats.close();
     
     std::sort(times.begin(), times.end(), sortLessThan);
 
-    avg=0;
-    med=0;
-    min=0;
-    max=0;
     if(times.size()){
          for(auto time:times){
              avg+=time;
@@ -280,7 +280,7 @@ void* ThreadPoolServer::run(){
                 code=(files.wrFile(user, body)?200:500);
             }
             else if(reqType=="DELETE")
-                code=(cache.erase(key)?200:404||files.dlFile(user)?200:404);
+                code=(cache.erase(key)||files.dlFile(user)?200:404);
         }
 
         //check for keep alive connection

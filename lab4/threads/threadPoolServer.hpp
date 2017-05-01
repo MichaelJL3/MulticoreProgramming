@@ -43,23 +43,9 @@
 #define PATH ""
 #define ALGO_PATH ""
 
-#ifdef STATS
-#ifndef BIGLOCK
-#define PATH "/ReadWriteLock"
-#else
-#define PATH "/GlobalLock"
-#endif
-#endif
-
 #ifndef LFREE
-#ifdef STATS
-#define ALGO_PATH "/RegQueue"
-#endif
 #include "../datastructs/queue.h"
 #else
-#ifdef STATS
-#define ALGO_PATH "/LockFree"
-#endif
 #include "../datastructs/lockFreeQueue.hpp"
 #endif
 
@@ -73,6 +59,12 @@
 #include <algorithm>
 #include <chrono>
 #include <ctime>
+
+#ifdef NO_CACHE
+#define ALGO_PATH "/NoCache"
+#else
+#define ALGO_PATH "/Cache"
+#endif
 
 struct Data{
     int conn;
@@ -118,10 +110,6 @@ class ThreadPoolServer : public ThreadPool, public Server{
     int _deletes;
     std::vector<double> times;
     std::mutex timeLock;
-    double avg;
-    double min;
-    double max;
-    double med;
     #endif
     
     int numThreads;
