@@ -39,7 +39,7 @@ void LRUCacheMap<K,V>::insert(const K key, const V val){
 } 
 
 //evict oldest member from cache
-//function is private(internal) is locked from it is locked from its caller
+//function is private(internal) is locked from its caller
 template<typename K, typename V>
 void LRUCacheMap<K,V>::evict(){
     auto it=cache.begin();

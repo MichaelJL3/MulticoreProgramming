@@ -27,32 +27,49 @@
 \*************************************/
 
 //constructor
-ThreadPoolServer::ThreadPoolServer(int threads, int port, int listen=1024) : ThreadPool(threads), Server(1024, listen, port), cache(CACHE_SIZE), files("stored/") {
+ThreadPoolServer::ThreadPoolServer(int threads, int port, int listen=1024) : ThreadPool(threads), Server(1024, listen, port), files("stored/"), cache(CACHE_SIZE) {
     numThreads=threads;
-    #ifdef STATS
+
     instance=this;
     signal(SIGINT, ThreadPoolServer::shutdown);
-    fd.open ("analyze/"+std::to_string(threads)+PATH+ALGO_PATH+"/stats.csv", std::ofstream::out);
+    fd.open ("analyze/"+std::to_string(threads)+ALGO_PATH+"/stats.csv", std::ofstream::out);
     if(!fd.is_open())
-        std::cout<<"Failed to open stats file: " << std::to_string(threads) << PATH << ALGO_PATH << "/stats.csv\n";
-    _posts=0;
-    _gets=0;
-    _deletes=0;
+        std::cout<<"Failed to open stats file: " << std::to_string(threads) << ALGO_PATH << "/stats.csv\n";
+
+    #ifdef NO_CACHE
+    std::cout<<"Cache: Disabled\n";
+    #else
+    std::cout<<"Cache: Enabled\nCache Size: "<< CACHE_SIZE << "\n";
+    #endif
+
+    #ifdef LFREE
+    std::cout<<"Lock Free Queue: Enabled\n";
+    #else
+    std::cout<<"Lock Free Queue: Disabled\n";
+    #endif 
+
+    #ifdef INFO
+    std::cout<<"Addtnl Info: Enabled\n";
+    #else
+    std::cout<<"Addtnl Info: Disabled\n";
     #endif
 }
 
-#ifdef STATS
 void ThreadPoolServer::handle_shutdown(){
     size_t pos;
     double avg=0;
     double min=0;
     double max=0;
     double med=0;
+    int _gets=0;
+    int _posts=0;
+    int _deletes=0;
 
     fd.flush();
     fd.close();
     
-    std::ifstream stats ("analyze/"+std::to_string(numThreads)+PATH+ALGO_PATH+"/stats.csv");
+    std::vector<double> times;
+    std::ifstream stats ("analyze/"+std::to_string(numThreads)+ALGO_PATH+"/stats.csv");
     std::string line;
     std::string type;    
 
@@ -74,7 +91,7 @@ void ThreadPoolServer::handle_shutdown(){
             }
         }
     }else{
-        std::cout<<"Failed to open stats file: " << std::to_string(numThreads) << PATH << ALGO_PATH << "/stats.csv\n";
+        std::cout<<"Failed to open stats file: " << std::to_string(numThreads) << ALGO_PATH << "/stats.csv\n";
     }
     stats.close();
     
@@ -101,73 +118,9 @@ void ThreadPoolServer::handle_shutdown(){
 
 void ThreadPoolServer::shutdown(int sig){
     instance->handle_shutdown();
-
     exit(sig);
 }
-#endif
 
-//thread run function
-#ifndef STATS
-void* ThreadPoolServer::run(){
-    std::string reqType, key, user, body="";
-    MD5Hash md5;
-    int conn, code;
-    bool alive;
-
-    while(true){
-        //wait for connection
-        queue.listen(conn);
-
-        HTTPReq req(conn);
-        code=404;
-
-        //ignore malformed or failed parses as 404
-        if(req.parse()!=-1||!req.isMalformed()){
-            reqType=req.getMethod();
-
-            //check if key-md5 is cached
-            user=req.getURI();
-            if(hashes.lookup(user, key)==-1){
-                key=md5.getHash(user);
-                hashes.insert(user, key);
-            }
-
-            if(reqType=="GET")
-                code=(cache.get(key, body)||files.rdFile(user, body)?200:404);
-            else if(reqType=="POST"){
-                body=req.getBody();
-                cache.insert(key, body);
-                code=(files.wrFile(user, body)?200:500);
-            }
-            else if(reqType=="DELETE")
-                code=(cache.erase(key)||files.dlFile(user)?200:404);
-        }
-
-        //check for keep alive connection
-        alive=req.keepAlive();
-        
-        //sedn response
-        HTTPResp res(code, body, alive);
-        send(res.isMalformed()?"HTTP/1.1 501 Internal Server Error\r\n\r\n":res.getResponse(), conn);
-
-        //push back on queue or close connection
-        if(alive)
-            queue.push(conn);
-        else
-            closeConn(conn);
-        
-        //optional logging
-        #ifdef INFO 
-        LOG("\nREQ: "<<req<<"\nKEEP-ALIVE: "<<alive<<"\nRES: "<<res.getResponse()<<"\nKEY: "<<key);
-        #endif
-        
-        //clear out the md5 buffer
-        md5.clear();
-    }
-
-    pthread_exit(NULL);
-}
-#elif NO_CACHE
 void* ThreadPoolServer::run(){
     std::string reqType, key, user, body="";
     MD5Hash md5;
@@ -198,6 +151,17 @@ void* ThreadPoolServer::run(){
                 hashes.insert(user, key);
             }
 
+            #ifndef NO_CACHE
+            if(reqType=="GET")
+                code=(cache.get(key, body)||files.rdFile(user, body)?200:404);
+            else if(reqType=="POST"){
+                body=req.getBody();
+                cache.insert(key, body);
+                code=(files.wrFile(user, body)?200:500);
+            }
+            else if(reqType=="DELETE")
+                code=(cache.erase(key)||files.dlFile(user)?200:404);
+            #else
             if(reqType=="GET")
                 code=(files.rdFile(user, body)?200:404);
             else if(reqType=="POST"){
@@ -206,6 +170,7 @@ void* ThreadPoolServer::run(){
             }
             else if(reqType=="DELETE")
                 code=(files.dlFile(user)?200:404);
+            #endif
         }
 
         //check for keep alive connection
@@ -219,8 +184,7 @@ void* ThreadPoolServer::run(){
         if(alive){
             dt->st=std::chrono::high_resolution_clock::now();
             queue.push(dt);
-        }
-        else{
+        }else{
             delete dt;
             closeConn(conn);
         }
@@ -241,89 +205,9 @@ void* ThreadPoolServer::run(){
 
     pthread_exit(NULL);
 }
-#else
-void* ThreadPoolServer::run(){
-    std::string reqType, key, user, body="";
-    MD5Hash md5;
-    int conn, code;
-    bool alive;
-
-    Data *dt;
-    std::chrono::high_resolution_clock::time_point st, en;
-
-    while(true){
-
-        //wait for connection
-        queue.listen(dt);
-        conn=dt->conn;
-        st=dt->st;
-
-        HTTPReq req(conn);
-        code=404;
-
-        //ignore malformed or failed parses as 404
-        if(req.parse()!=-1||!req.isMalformed()){
-            reqType=req.getMethod();
-
-            //check if key-md5 is cached
-            user=req.getURI();
-            if(hashes.lookup(user, key)==-1){
-                key=md5.getHash(user);
-                hashes.insert(user, key);
-            }
-
-            if(reqType=="GET")
-                code=(cache.get(key, body)||files.rdFile(user, body)?200:404);
-            else if(reqType=="POST"){
-                body=req.getBody();
-                cache.insert(key, body);
-                code=(files.wrFile(user, body)?200:500);
-            }
-            else if(reqType=="DELETE")
-                code=(cache.erase(key)||files.dlFile(user)?200:404);
-        }
-
-        //check for keep alive connection
-        alive=req.keepAlive();
-        
-        //sedn response
-        HTTPResp res(code, body, alive);
-        send(res.isMalformed()?"HTTP/1.1 501 Internal Server Error\r\n\r\n":res.getResponse(), conn);
-
-        //push back on queue or close connection
-        if(alive){
-            dt->st=std::chrono::high_resolution_clock::now();
-            queue.push(dt);
-        }
-        else{
-            delete dt;
-            closeConn(conn);
-        }
-
-        en=std::chrono::high_resolution_clock::now();
-        timeLock.lock();
-        fd<<reqType+","+std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(en-st).count())<<"\n";
-        timeLock.unlock();
-
-        //optional logging
-        #ifdef INFO 
-        LOG("\nREQ: "<<req<<"\nKEEP-ALIVE: "<<alive<<"\nRES: "<<res.getResponse()<<"\nKEY: "<<key);
-        #endif
-        
-        //clear out the md5 buffer
-        md5.clear();
-    }
-
-    pthread_exit(NULL);
-}
-#endif
 
 //handle incoming connections
 void ThreadPoolServer::handleConn(){
-    #ifndef STATS
-    queue.push(this->getConn());
-    #else
     Data *dt=new Data{this->getConn(), std::chrono::high_resolution_clock::now()};
     queue.push(dt);
-    #endif
 }

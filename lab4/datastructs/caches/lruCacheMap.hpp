@@ -23,6 +23,7 @@ template<typename K, typename V>
 class LRUCacheMap{
 	pthread_mutex_t lock;
 	std::unordered_map<K,std::pair<V,size_t>> cache;
+	std::map<size_t,K> times;
 	size_t _time;
 	const size_t _size;
 

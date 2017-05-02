@@ -1,6 +1,5 @@
 
-#ifndef THREAD_POOL_SERVER_HPP
-#define THREAD_POOL_SERVER_HPP
+#pragma once
 
 /*************************************\
 
@@ -33,23 +32,6 @@
 #include "../httpreq/httpresp.hpp"
 #include "../hashing/md5.hpp"
 #include "../files/filesys.hpp"
-
-#ifdef CACHE_LIST
-#include "../datastructs/caches/lruCache.hpp"
-#else
-#include "../datastructs/caches/lruCacheMap.hpp"
-#endif
-
-#define PATH ""
-#define ALGO_PATH ""
-
-#ifndef LFREE
-#include "../datastructs/queue.h"
-#else
-#include "../datastructs/lockFreeQueue.hpp"
-#endif
-
-#ifdef STATS
 #include <iostream>
 #include <signal.h>
 #include <mutex>
@@ -60,12 +42,6 @@
 #include <chrono>
 #include <ctime>
 
-#ifdef NO_CACHE
-#define ALGO_PATH "/NoCache"
-#else
-#define ALGO_PATH "/Cache"
-#endif
-
 struct Data{
     int conn;
     std::chrono::high_resolution_clock::time_point st;
@@ -75,43 +51,38 @@ static bool sortLessThan(double lft, double rht){
    return lft < rht;
 }
 
+const size_t CACHE_SIZE=150;
+
+#ifdef CACHE_LIST
+#include "../datastructs/caches/lruCache.hpp"
+typedef LRUCache<std::string, std::string> Cache;
+#else
+#include "../datastructs/caches/lruCacheMap.hpp"
+typedef LRUCacheMap<std::string, std::string> Cache;
 #endif
 
-const size_t CACHE_SIZE=150;
+#ifndef LFREE
+#include "../datastructs/queue.h"
+typedef ThreadSafeListenerQueue<Data*> Queue;
+#else
+#include "../datastructs/lockFreeQueue.hpp"
+typedef LockFreeQueue<Data*> Queue;
+#endif
+
+//#define ALGO_PATH ""
+#ifdef NO_CACHE
+#define ALGO_PATH "/NoCache"
+#else
+#define ALGO_PATH "/Cache"
+#endif
 
 class ThreadPoolServer : public ThreadPool, public Server{
     ThreadSafeKVStore<std::string, std::string> hashes;
     ThreadSafeFiles files;
-    
-    #ifdef CACHE_LIST
-    LRUCache<std::string, std::string> cache;
-    #else
-    LRUCacheMap<std::string, std::string> cache;
-    #endif
-
-    #ifndef LFREE
-    #ifndef STATS
-    ThreadSafeListenerQueue<int> queue;
-    #else
-    ThreadSafeListenerQueue<Data*> queue;
-    #endif
-    #else
-    #ifndef STATS
-    LockFreeQueue<int> queue;
-    #else
-    LockFreeQueue<Data*> queue;
-    #endif
-    #endif
-    
-    #ifdef STATS
+    Cache cache;
+    Queue queue;
     std::ofstream fd;
-    int _gets;
-    int _posts;
-    int _deletes;
-    std::vector<double> times;
     std::mutex timeLock;
-    #endif
-    
     int numThreads;
 public:
     ThreadPoolServer(int threads, int port, int listen);    //constructor
@@ -121,8 +92,4 @@ public:
     static void shutdown(int sig);
 };
 
-#ifdef STATS
 static ThreadPoolServer* instance;
-#endif
-
-#endif

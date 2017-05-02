@@ -28,42 +28,38 @@ ThreadSafeFiles::~ThreadSafeFiles(){
 
 //write to a file
 bool ThreadSafeFiles::wrFile(std::string filename, std::string content){
-    pthread_rwlock_wrlock(&lock);
-    fd.open(STORAGE_PATH+filename, std::ofstream::out);
-    
-    if(fd.is_open()){
-        fd<<content;
-        fd.close();
-        pthread_rwlock_unlock(&lock);
-        return true;
-    }
+    bool ret=false;
 
-    fd.close();
+    pthread_rwlock_wrlock(&lock);
+    fw.open(STORAGE_PATH+filename, std::ofstream::out);
+
+    ret=fw.is_open();
+    if(ret)
+        fw<<content;
+
+    fw.close();
     pthread_rwlock_unlock(&lock);
-    return false;
+    return ret;
 }
 
 //read the contents of a file
 bool ThreadSafeFiles::rdFile(std::string filename, std::string &content){
     std::string line;
+    bool ret=false;
 
     pthread_rwlock_rdlock(&lock);
     std::ifstream fd(STORAGE_PATH+filename, std::ofstream::out);
 
-    if(!fd.is_open()){
-        fd.close();
-        pthread_rwlock_unlock(&lock);
-        return false;
-    }
-
-    content="";
-    while(getline(fd,line)){
-        content+=line;    
+    ret=fd.is_open();
+    if(ret){
+        content="";
+        while(getline(fd,line))
+            content+=line;    
     }
 
     fd.close();
     pthread_rwlock_unlock(&lock);
-    return true;
+    return ret;
 }
 
 //delete a file

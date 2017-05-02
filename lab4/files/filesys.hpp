@@ -24,7 +24,7 @@
 class ThreadSafeFiles{
     pthread_rwlock_t lock;
     std::string STORAGE_PATH;
-    std::ofstream fd;
+    std::ofstream fw;
     ThreadSafeFiles();
 public:
     ThreadSafeFiles(const std::string path);
