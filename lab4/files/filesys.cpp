@@ -48,7 +48,7 @@ bool ThreadSafeFiles::rdFile(std::string filename, std::string &content){
     bool ret=false;
 
     pthread_rwlock_rdlock(&lock);
-    std::ifstream fd(STORAGE_PATH+filename, std::ofstream::out);
+    std::ifstream fd(STORAGE_PATH+filename);
 
     ret=fd.is_open();
     if(ret){
@@ -65,7 +65,7 @@ bool ThreadSafeFiles::rdFile(std::string filename, std::string &content){
 //delete a file
 bool ThreadSafeFiles::dlFile(std::string filename){
     pthread_rwlock_wrlock(&lock);
-    bool ret=(std::remove((STORAGE_PATH+filename).c_str())?false:true);
+    bool ret=!(remove((STORAGE_PATH+filename).c_str()));
     pthread_rwlock_unlock(&lock);
     return ret;
 }

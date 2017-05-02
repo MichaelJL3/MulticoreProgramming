@@ -43,10 +43,6 @@ endif
 ifdef S
 FLAGS+= -DSAFE
 endif
-#stats flag
-ifdef ST
-FLAGS+= -DSTATS
-endif
 endif
 
 #lock free flag
@@ -85,7 +81,7 @@ r rn run:
 
 #create a test file
 gen_test:
-	python lab2_tools/lab2_workload.py -z -n=$(sess) -m=$(reqs) > requests.txt
+	python lab2_tools/lab2_workload.py -n=$(sess) -m=$(reqs) -z > requests.txt
 
 #run httperf
 http:

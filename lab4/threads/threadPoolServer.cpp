@@ -160,7 +160,7 @@ void* ThreadPoolServer::run(){
                 code=(files.wrFile(user, body)?200:500);
             }
             else if(reqType=="DELETE")
-                code=(cache.erase(key)||files.dlFile(user)?200:404);
+                code=(cache.erase(key)&&files.dlFile(user)?200:404);
             #else
             if(reqType=="GET")
                 code=(files.rdFile(user, body)?200:404);
