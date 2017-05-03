@@ -79,31 +79,33 @@ def analyze():
         #graphType(filepath+'typesGraph.png', gets, post, delete, unknown)
         #graph(times, filepath+'total.png', 'all requests')
 
-        #times.sort()
-        #mx=times[len(times)-1]
-        #mn=times[0]
-        #size=len(times)
-        #if(size%2==0):
-        #	mdn=(float(times[int(size/2)-1])+float(times[int(size/2)]))/2
-        #else:
-        #	mdn=times[int(size/2)]
+        times.sort()
+        mx=times[len(times)-1]
+        mn=times[0]
+        size=len(times)
+        if(size%2==0):
+        	mdn=(float(times[int(size/2)-1])+float(times[int(size/2)]))/2
+        else:
+        	mdn=times[int(size/2)]
 
-        #avg=average(times)
+        avg=average(times)
 
-        #print("Maximum Time: "+str(mx)+"\nMinimum Time: "+str(mn)+"\nMedian: "+str(mdn)+"\nAverage: "+str(avg))
+        print("Results For: "+filepath+"\nMaximum Time: "+str(mx)+"\nMinimum Time: "+str(mn)+"\nMedian: "+str(mdn)+"\nAverage: "+str(avg)+"\n")
 
-        allTimes.append(times)
+        #allTimes.append(times)
 
-    count=0
-    lines=[]
-    for timeArr in allTimes:
-        line, =plt.plot(timeArr, linewidth=2.0, label=files[count])
-        lines.append(line)
-        count+=1
-        plt.legend(handles=lines)
+    #cmap = plt.get_cmap('jet')
+    #colors = cmap(np.linspace(0, 1.0, len(allTimes)))
+    #count=0
+    #lines=[]
+    #for timeArr, color in zip(allTimes, colors):
+    #    line, =plt.plot(timeArr, linewidth=2.0, label=files[count], color=color)
+    #    lines.append(line)
+    #    count+=1
+    #    plt.legend(handles=lines)
 
-    plt.legend(handles=lines)
-    display('All_Runs.png', 'Time (seconds)', 'Requests')
+    #plt.legend(handles=lines)
+    #display('All_Runs.png', 'Time (seconds)', 'Requests')
 
 def average(arr):
     avg=0.0

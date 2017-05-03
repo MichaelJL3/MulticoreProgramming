@@ -1,0 +1,72 @@
+Results For: 1/NoCache/
+Maximum Time: 25.086
+Minimum Time: 0.086
+Median: 0.278
+Average: 0.712184851485
+
+Results For: 1/Cache/
+Maximum Time: 22.022
+Minimum Time: 0.089
+Median: 0.269
+Average: 0.864008415842
+
+Results For: 2/NoCache/
+Maximum Time: 24.931
+Minimum Time: 0.053
+Median: 0.28
+Average: 0.844257920792
+
+Results For: 2/Cache/
+Maximum Time: 23.745
+Minimum Time: 0.092
+Median: 0.273
+Average: 0.796416534653
+
+Results For: 4/NoCache/
+Maximum Time: 32.755
+Minimum Time: 0.096
+Median: 0.297
+Average: 1.03308069307
+
+Results For: 4/Cache/
+Maximum Time: 32.121
+Minimum Time: 0.086
+Median: 0.273
+Average: 0.689656534653
+
+Results For: 8/NoCache/
+Maximum Time: 19.461
+Minimum Time: 0.094
+Median: 0.279
+Average: 0.849611089109
+
+Results For: 8/Cache/
+Maximum Time: 44.569
+Minimum Time: 0.093
+Median: 0.275
+Average: 0.689659108911
+
+Results For: 16/NoCache/
+Maximum Time: 20.965
+Minimum Time: 0.092
+Median: 0.279
+Average: 0.883736732673
+
+Results For: 16/Cache/
+Maximum Time: 24.992
+Minimum Time: 0.096
+Median: 0.266
+Average: 0.738106138614
+
+Results For: 32/NoCache/
+Maximum Time: 48.584
+Minimum Time: 0.101
+Median: 0.286
+Average: 0.868919108911
+
+Results For: 32/Cache/
+Maximum Time: 42.104
+Minimum Time: 0.095
+Median: 0.267
+Average: 0.871417326733
+
