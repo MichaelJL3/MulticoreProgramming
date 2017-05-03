@@ -1,5 +1,5 @@
 
-#lab2 - Thread Pool Server
+#lab4 - Thread Pool Server with cache
 
 ##Language: C++
 
@@ -37,6 +37,16 @@ there are also more complex modes
 
 	to use these flags set them to one when running the command
 	ex: make c D=1 E=1, make r O=1
+
+##Special Flags
+	for this lab there is one important flag NC
+
+	NC: no cache disables the caching algorithm
+	ST: has been removed as a flag stats functions are now built into
+		the server code
+
+	for caching just compile normally
+	use as make c NC=1
 
 ##Files
 
