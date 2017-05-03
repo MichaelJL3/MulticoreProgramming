@@ -152,14 +152,18 @@ void* ThreadPoolServer::run(){
             }
 
             #ifndef NO_CACHE
-            if(reqType=="GET")
-                code=(cache.get(key, body)||files.rdFile(user, body)?200:404);
-            else if(reqType=="POST"){
+            if(reqType=="GET"){
+                if(cache.get(key, body))
+                    code=200;
+                else if(files.rdFile(user, body)){
+                    code=200;
+                    cache.insert(key, body);
+                }
+            }else if(reqType=="POST"){
                 body=req.getBody();
                 cache.insert(key, body);
                 code=(files.wrFile(user, body)?200:500);
-            }
-            else if(reqType=="DELETE")
+            }else if(reqType=="DELETE")
                 code=(cache.erase(key)&&files.dlFile(user)?200:404);
             #else
             if(reqType=="GET")
