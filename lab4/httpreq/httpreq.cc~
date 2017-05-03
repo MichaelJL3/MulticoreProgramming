@@ -23,8 +23,8 @@
 
 HTTPReq::HTTPReq(const int sock_fd)
 	: parsed_(false)
-	, sock_fd_(sock_fd)
 	, malformed_(true)
+	, sock_fd_(sock_fd)
 {
 }
 
