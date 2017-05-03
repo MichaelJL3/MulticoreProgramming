@@ -79,9 +79,10 @@ int HTTPReq::parse(void) {
 			content_length = strtol(val.c_str(), nullptr, 0);
 		} else if (0 == strncasecmp(key.c_str(), "connection", key.length())) {
 			keep_alive_ = (!strncasecmp(val.c_str(), "keep-alive", val.length())?true:false);
-		} else {
+		} 
+		/*else {
 			std::cerr << "Ignoring header field '" << key << "'" << std::endl;
-		}
+		}*/
 
 	} while (true);
 
