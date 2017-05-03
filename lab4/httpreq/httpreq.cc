@@ -22,8 +22,8 @@
 #include <errno.h>
 
 HTTPReq::HTTPReq(const int sock_fd)
-	: parsed_(false)
-	, sock_fd_(sock_fd)
+	: sock_fd_(sock_fd)
+	, parsed_(false)
 	, malformed_(true)
 {
 }
